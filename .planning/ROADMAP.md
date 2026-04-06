@@ -34,12 +34,12 @@
 **Goal:** Create the planning baseline for this repo and make bootstrap gaps explicit before code execution starts.
 
 **Depends on:** Nothing (first phase)
-**Requirements:** `BOOT-01`, `BOOT-02`
+**Requirements:** [BOOT-01, BOOT-02]
 **Success criteria:**
 1. `.planning/` contains the milestone planning documents needed for ongoing GSD work.
 2. The absence of git metadata is documented as an execution prerequisite rather than ignored.
 3. The repo is described as an Android hybrid SDK stabilization demo with an iOS parity milestone.
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
 - [ ] 01-01: Verify git/bootstrap constraints and normalize planning artifacts for GSD tooling
@@ -49,7 +49,7 @@ Plans:
 **Goal:** Decouple the bridge from the concrete mock SDK while preserving the current Android demo behavior and public bridge entrypoints.
 
 **Depends on:** Phase 1
-**Requirements:** `SDK-01`, `SDK-02`, `BRG-01`, `BRG-02`
+**Requirements:** [SDK-01, SDK-02, BRG-01, BRG-02]
 **Success criteria:**
 1. `NativeBridge` uses an adapter interface rather than a direct `MockRailSdk` dependency.
 2. Existing Android buttons still call the same bridge methods and still work.
@@ -66,7 +66,7 @@ Plans:
 **Goal:** Make failures reproducible and observable with structured diagnostics suitable for debugging reports.
 
 **Depends on:** Phase 2
-**Requirements:** `SDK-03`, `LOG-01`, `LOG-02`, `UI-01`
+**Requirements:** [SDK-03, LOG-01, LOG-02, UI-01]
 **Success criteria:**
 1. Failure scenarios can be selected intentionally instead of relying only on randomness.
 2. A single request can be followed across bridge and SDK stages via `correlationId`.
@@ -83,7 +83,7 @@ Plans:
 **Goal:** Prevent common hybrid-bridge race conditions from corrupting the demo flow or misleading the diagnostic output.
 
 **Depends on:** Phase 3
-**Requirements:** `STAB-01`
+**Requirements:** [STAB-01]
 **Success criteria:**
 1. Duplicate callbacks are ignored after the first accepted result.
 2. Timed-out requests do not keep hanging indefinitely.
@@ -99,7 +99,7 @@ Plans:
 **Goal:** Add a second runnable platform that demonstrates the same stabilization pattern with `WKWebView` and Swift.
 
 **Depends on:** Phase 4
-**Requirements:** `IOS-01`, `IOS-02`
+**Requirements:** [IOS-01, IOS-02]
 **Success criteria:**
 1. An Xcode-openable iOS project exists in the repo.
 2. The iOS demo exposes the same four bridge actions as Android.
@@ -116,7 +116,7 @@ Plans:
 **Goal:** Package the work as a credible troubleshooting portfolio artifact instead of a raw code sample.
 
 **Depends on:** Phase 5
-**Requirements:** `DOC-01`
+**Requirements:** [DOC-01]
 **Success criteria:**
 1. `README.md` explains the problem framing, architecture, and how to run both demos.
 2. `ARCHITECTURE.md` describes the bridge, adapter, retry, and logging flow.
