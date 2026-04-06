@@ -8,28 +8,33 @@ import android.webkit.WebView;
 
 import com.demo.railbridge.logging.ErrorLogger;
 import com.demo.railbridge.retry.RetryHandler;
+import com.demo.railbridge.sdk.BalanceSnapshot;
 import com.demo.railbridge.sdk.ChargeResult;
-import com.demo.railbridge.sdk.MockRailSdk;
+import com.demo.railbridge.sdk.RailPlusSdkAdapter;
 import com.demo.railbridge.sdk.SdkErrorCode;
+import com.demo.railbridge.sdk.SdkStatusSnapshot;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.UUID;
+
 public class NativeBridge {
 
     private static final String TAG = "RailBridge.NativeBridge";
+    private static final String PLATFORM_ANDROID = "android";
 
     private final WebView webView;
-    private final MockRailSdk mockRailSdk;
+    private final RailPlusSdkAdapter sdkAdapter;
     private final ErrorLogger errorLogger;
     private final RetryHandler retryHandler;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private volatile boolean destroyed;
 
-    public NativeBridge(WebView webView, MockRailSdk mockRailSdk, ErrorLogger errorLogger) {
+    public NativeBridge(WebView webView, RailPlusSdkAdapter sdkAdapter, ErrorLogger errorLogger) {
         this.webView = webView;
-        this.mockRailSdk = mockRailSdk;
+        this.sdkAdapter = sdkAdapter;
         this.errorLogger = errorLogger;
         this.retryHandler = new RetryHandler(errorLogger);
     }
@@ -37,6 +42,7 @@ public class NativeBridge {
     @JavascriptInterface
     public void requestCharge(String paramsJson) {
         Log.d(TAG, "requestCharge called: " + paramsJson);
+        RequestContext requestContext = RequestContext.forMethod("requestCharge", paramsJson);
 
         try {
             JSONObject params = new JSONObject(paramsJson);
@@ -49,10 +55,13 @@ public class NativeBridge {
                         RetryHandler.OnSuccessCallback onSuccess,
                         RetryHandler.OnErrorCallback onError
                 ) {
-                    mockRailSdk.charge(cardId, amount, new MockRailSdk.SdkCallback<ChargeResult>() {
+                    sdkAdapter.requestCharge(cardId, amount, new RailPlusSdkAdapter.Callback<ChargeResult>() {
                         @Override
                         public void onSuccess(ChargeResult result) {
-                            onSuccess.onResult(buildChargeSuccessJson(result));
+                            onSuccess.onResult(BridgeResponseFactory.buildChargeSuccess(
+                                    result,
+                                    buildMetadata(requestContext, "sdk_success")
+                            ));
                         }
 
                         @Override
@@ -79,9 +88,17 @@ public class NativeBridge {
                     errorLogger.logSdkFailure(
                             "requestCharge",
                             errorCode,
-                            "{\"cardId\":\"" + cardId + "\",\"amount\":" + amount + "}"
+                            buildFailureContext(cardId, amount, requestContext.getCorrelationId())
                     );
-                    postResultToJs(buildErrorJson("requestCharge", errorCode, retryCount));
+                    postResultToJs(BridgeResponseFactory.buildError(
+                            "requestCharge",
+                            errorCode,
+                            retryCount,
+                            UUID.randomUUID().toString(),
+                            null,
+                            RetryHandler.isRetryable(errorCode),
+                            buildMetadata(requestContext, "sdk_error")
+                    ));
                 }
             });
         } catch (Exception e) {
@@ -89,15 +106,26 @@ public class NativeBridge {
             errorLogger.logSdkFailure(
                     "requestCharge",
                     SdkErrorCode.ERR_UNKNOWN,
-                    "params=" + paramsJson + ", error=" + e.getMessage()
+                    "correlationId=" + requestContext.getCorrelationId()
+                            + ", params=" + paramsJson
+                            + ", error=" + e.getMessage()
             );
-            postResultToJs(buildErrorJson("requestCharge", SdkErrorCode.ERR_UNKNOWN, 0));
+            postResultToJs(BridgeResponseFactory.buildError(
+                    "requestCharge",
+                    SdkErrorCode.ERR_UNKNOWN,
+                    0,
+                    UUID.randomUUID().toString(),
+                    null,
+                    false,
+                    buildMetadata(requestContext, "bridge_exception")
+            ));
         }
     }
 
     @JavascriptInterface
     public void getBalance(String paramsJson) {
         Log.d(TAG, "getBalance called: " + paramsJson);
+        RequestContext requestContext = RequestContext.forMethod("getBalance", paramsJson);
 
         try {
             JSONObject params = new JSONObject(paramsJson);
@@ -109,10 +137,13 @@ public class NativeBridge {
                         RetryHandler.OnSuccessCallback onSuccess,
                         RetryHandler.OnErrorCallback onError
                 ) {
-                    mockRailSdk.getBalance(cardId, new MockRailSdk.SdkCallback<MockRailSdk.BalanceResult>() {
+                    sdkAdapter.getBalance(cardId, new RailPlusSdkAdapter.Callback<BalanceSnapshot>() {
                         @Override
-                        public void onSuccess(MockRailSdk.BalanceResult result) {
-                            onSuccess.onResult(buildBalanceSuccessJson(result));
+                        public void onSuccess(BalanceSnapshot result) {
+                            onSuccess.onResult(BridgeResponseFactory.buildBalanceSuccess(
+                                    result,
+                                    buildMetadata(requestContext, "sdk_success")
+                            ));
                         }
 
                         @Override
@@ -139,9 +170,18 @@ public class NativeBridge {
                     errorLogger.logSdkFailure(
                             "getBalance",
                             errorCode,
-                            "{\"cardId\":\"" + cardId + "\"}"
+                            "{\"cardId\":\"" + cardId + "\",\"correlationId\":\""
+                                    + requestContext.getCorrelationId() + "\"}"
                     );
-                    postResultToJs(buildErrorJson("getBalance", errorCode, retryCount));
+                    postResultToJs(BridgeResponseFactory.buildError(
+                            "getBalance",
+                            errorCode,
+                            retryCount,
+                            UUID.randomUUID().toString(),
+                            null,
+                            RetryHandler.isRetryable(errorCode),
+                            buildMetadata(requestContext, "sdk_error")
+                    ));
                 }
             });
         } catch (Exception e) {
@@ -149,37 +189,51 @@ public class NativeBridge {
             errorLogger.logSdkFailure(
                     "getBalance",
                     SdkErrorCode.ERR_UNKNOWN,
-                    "params=" + paramsJson + ", error=" + e.getMessage()
+                    "correlationId=" + requestContext.getCorrelationId()
+                            + ", params=" + paramsJson
+                            + ", error=" + e.getMessage()
             );
-            postResultToJs(buildErrorJson("getBalance", SdkErrorCode.ERR_UNKNOWN, 0));
+            postResultToJs(BridgeResponseFactory.buildError(
+                    "getBalance",
+                    SdkErrorCode.ERR_UNKNOWN,
+                    0,
+                    UUID.randomUUID().toString(),
+                    null,
+                    false,
+                    buildMetadata(requestContext, "bridge_exception")
+            ));
         }
     }
 
     @JavascriptInterface
     public void getSdkStatus() {
         Log.d(TAG, "getSdkStatus called");
+        RequestContext requestContext = RequestContext.forMethod("getSdkStatus", null);
 
         try {
-            JSONObject data = new JSONObject();
-            data.put("initialized", mockRailSdk.isInitialized());
-            data.put("version", mockRailSdk.getSdkVersion());
-
-            JSONObject response = new JSONObject();
-            response.put("status", "success");
-            response.put("method", "getSdkStatus");
-            response.put("data", data);
-            response.put("retryCount", 0);
-
-            postResultToJs(response.toString());
-        } catch (JSONException e) {
+            SdkStatusSnapshot status = sdkAdapter.getStatus();
+            postResultToJs(BridgeResponseFactory.buildStatusSuccess(
+                    status,
+                    buildMetadata(requestContext, "status")
+            ));
+        } catch (Exception e) {
             Log.e(TAG, "getSdkStatus exception", e);
-            postResultToJs(buildErrorJson("getSdkStatus", SdkErrorCode.ERR_UNKNOWN, 0));
+            postResultToJs(BridgeResponseFactory.buildError(
+                    "getSdkStatus",
+                    SdkErrorCode.ERR_UNKNOWN,
+                    0,
+                    UUID.randomUUID().toString(),
+                    null,
+                    false,
+                    buildMetadata(requestContext, "bridge_exception")
+            ));
         }
     }
 
     @JavascriptInterface
     public void reportError(String errorJson) {
         Log.d(TAG, "reportError called: " + errorJson);
+        RequestContext requestContext = RequestContext.forMethod("reportError", errorJson);
 
         try {
             JSONObject error = new JSONObject(errorJson);
@@ -190,18 +244,26 @@ public class NativeBridge {
             errorLogger.logSdkFailure(
                     "reportError (from JS)",
                     SdkErrorCode.ERR_UNKNOWN,
-                    "{\"code\":\"" + code + "\",\"message\":\"" + message + "\",\"context\":\"" + context + "\"}"
+                    "{\"code\":\"" + code + "\",\"message\":\"" + message + "\",\"context\":\"" + context
+                            + "\",\"correlationId\":\"" + requestContext.getCorrelationId() + "\"}"
             );
 
-            JSONObject response = new JSONObject();
-            response.put("status", "received");
-            response.put("message", "Error report received");
-            response.put("code", code);
-
-            postResultToJs(response.toString());
+            postResultToJs(BridgeResponseFactory.buildReportAck(
+                    code,
+                    "Error report received",
+                    buildMetadata(requestContext, "ack")
+            ));
         } catch (Exception e) {
             Log.e(TAG, "reportError exception", e);
-            postResultToJs(buildErrorJson("reportError", SdkErrorCode.ERR_UNKNOWN, 0));
+            postResultToJs(BridgeResponseFactory.buildError(
+                    "reportError",
+                    SdkErrorCode.ERR_UNKNOWN,
+                    0,
+                    UUID.randomUUID().toString(),
+                    null,
+                    false,
+                    buildMetadata(requestContext, "bridge_exception")
+            ));
         }
     }
 
@@ -221,62 +283,61 @@ public class NativeBridge {
         });
     }
 
-    private String buildChargeSuccessJson(ChargeResult result) {
-        try {
-            JSONObject data = new JSONObject();
-            data.put("transactionId", result.getTransactionId());
-            data.put("amount", result.getAmount());
-            data.put("balance", result.getBalance());
-            data.put("timestamp", result.getTimestamp());
-
-            JSONObject response = new JSONObject();
-            response.put("status", "success");
-            response.put("method", "requestCharge");
-            response.put("data", data);
-            response.put("retryCount", 0);
-            return response.toString();
-        } catch (JSONException e) {
-            Log.e(TAG, "Failed to build charge JSON", e);
-            return buildErrorJson("requestCharge", SdkErrorCode.ERR_UNKNOWN, 0);
-        }
+    private BridgeResponseFactory.Metadata buildMetadata(RequestContext requestContext, String stage) {
+        return new BridgeResponseFactory.Metadata(
+                requestContext.getCallbackId(),
+                requestContext.getCorrelationId(),
+                PLATFORM_ANDROID,
+                stage,
+                requestContext.elapsedMs()
+        );
     }
 
-    private String buildBalanceSuccessJson(MockRailSdk.BalanceResult result) {
-        try {
-            JSONObject data = new JSONObject();
-            data.put("cardId", result.getCardId());
-            data.put("balance", result.getBalance());
-            data.put("timestamp", result.getTimestamp());
-
-            JSONObject response = new JSONObject();
-            response.put("status", "success");
-            response.put("method", "getBalance");
-            response.put("data", data);
-            response.put("retryCount", 0);
-            return response.toString();
-        } catch (JSONException e) {
-            Log.e(TAG, "Failed to build balance JSON", e);
-            return buildErrorJson("getBalance", SdkErrorCode.ERR_UNKNOWN, 0);
-        }
+    private String buildFailureContext(String cardId, int amount, String correlationId) {
+        return "{\"cardId\":\"" + cardId + "\",\"amount\":" + amount
+                + ",\"correlationId\":\"" + correlationId + "\"}";
     }
 
-    private String buildErrorJson(String method, SdkErrorCode errorCode, int retryCount) {
-        try {
-            JSONObject error = new JSONObject();
-            error.put("code", errorCode.getCode());
-            error.put("message", errorCode.getMessage());
-            error.put("retryCount", retryCount);
-            error.put("resolved", false);
+    private static final class RequestContext {
+        private final String method;
+        private final String callbackId;
+        private final String correlationId;
+        private final long startedAtMs;
 
-            JSONObject response = new JSONObject();
-            response.put("status", "error");
-            response.put("method", method);
-            response.put("error", error);
-            response.put("logId", java.util.UUID.randomUUID().toString());
-            return response.toString();
-        } catch (JSONException e) {
-            Log.e(TAG, "Failed to build error JSON", e);
-            return "{\"status\":\"error\",\"method\":\"" + method + "\"}";
+        private RequestContext(String method, String callbackId, String correlationId, long startedAtMs) {
+            this.method = method;
+            this.callbackId = callbackId;
+            this.correlationId = correlationId;
+            this.startedAtMs = startedAtMs;
+        }
+
+        static RequestContext forMethod(String method, String paramsJson) {
+            String callbackId = null;
+            if (paramsJson != null && !paramsJson.trim().isEmpty()) {
+                try {
+                    JSONObject params = new JSONObject(paramsJson);
+                    callbackId = params.optString("callbackId", null);
+                } catch (JSONException ignored) {
+                    callbackId = null;
+                }
+            }
+            return new RequestContext(method, callbackId, UUID.randomUUID().toString(), System.currentTimeMillis());
+        }
+
+        String getMethod() {
+            return method;
+        }
+
+        String getCallbackId() {
+            return callbackId;
+        }
+
+        String getCorrelationId() {
+            return correlationId;
+        }
+
+        long elapsedMs() {
+            return Math.max(0L, System.currentTimeMillis() - startedAtMs);
         }
     }
 }

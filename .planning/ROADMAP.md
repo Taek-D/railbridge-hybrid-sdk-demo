@@ -1,6 +1,6 @@
 # ROADMAP
 
-**Milestone:** `v0.2 포트폴리오 확장`
+**Milestone:** `v0.2 portfolio expansion`
 **Last Updated:** 2026-04-06
 
 ## Summary
@@ -11,8 +11,8 @@
 
 ## Phases
 
-- [ ] **Phase 1: Milestone Bootstrap** - Establish GSD planning state and record bootstrap constraints
-- [ ] **Phase 2: Android Adapter Seam** - Introduce the adapter seam and preserve the current bridge contract
+- [x] **Phase 1: Milestone Bootstrap** - Establish GSD planning state and record bootstrap constraints
+- [x] **Phase 2: Android Adapter Seam** - Introduce the adapter seam and preserve the current bridge contract
 - [ ] **Phase 3: Logging and Failure Simulation** - Add deterministic scenario control and structured diagnostic output
 - [ ] **Phase 4: Android Bridge Hardening** - Make the bridge resilient to async race conditions and teardown timing
 - [ ] **Phase 5: iOS Parity Demo** - Build a runnable iOS sample that mirrors the Android integration model
@@ -39,10 +39,10 @@
 1. `.planning/` contains the milestone planning documents needed for ongoing GSD work.
 2. The absence of git metadata is documented as an execution prerequisite rather than ignored.
 3. The repo is described as an Android hybrid SDK stabilization demo with an iOS parity milestone.
-**Plans:** 2 plans
+**Plans:** 1 plan
 
 Plans:
-- [ ] 01-01: Verify git/bootstrap constraints and normalize planning artifacts for GSD tooling
+- [x] 01-01: Verify git/bootstrap constraints and normalize planning artifacts for GSD tooling
 
 ### Phase 2: Android Adapter Seam
 
@@ -55,11 +55,11 @@ Plans:
 2. Existing Android buttons still call the same bridge methods and still work.
 3. New metadata fields are additive and do not break the current JS result handler.
 4. Mock behavior remains the default adapter implementation.
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: Define Android adapter contracts and wrap MockRailSdk without changing user-visible actions
-- [ ] 02-02: Move NativeBridge to adapter-based execution and additive metadata responses
+- [x] 02-01: Define Android adapter contracts and wrap MockRailSdk without changing user-visible actions
+- [x] 02-02: Move NativeBridge to adapter-based execution and additive metadata responses
 
 ### Phase 3: Logging and Failure Simulation
 
@@ -132,8 +132,8 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |---|---|---|---|
-| 1. Milestone Bootstrap | 0/1 | In progress | - |
-| 2. Android Adapter Seam | 0/2 | Not started | - |
+| 1. Milestone Bootstrap | 1/1 | Complete | 2026-04-06 |
+| 2. Android Adapter Seam | 2/2 | Complete | 2026-04-06 |
 | 3. Logging and Failure Simulation | 0/2 | Not started | - |
 | 4. Android Bridge Hardening | 0/1 | Not started | - |
 | 5. iOS Parity Demo | 0/2 | Not started | - |
@@ -141,4 +141,4 @@ Plans:
 
 ## Next Up
 
-Recommended next command: `$gsd-plan-phase 1`
+Recommended next command: `$gsd-discuss-phase 3`

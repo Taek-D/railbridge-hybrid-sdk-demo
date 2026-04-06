@@ -14,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.demo.railbridge.bridge.NativeBridge;
 import com.demo.railbridge.logging.ErrorLogger;
 import com.demo.railbridge.sdk.MockRailSdk;
+import com.demo.railbridge.sdk.MockRailSdkAdapter;
+import com.demo.railbridge.sdk.RailPlusSdkAdapter;
 import com.demo.railbridge.sdk.SdkErrorCode;
 
 public class WebViewActivity extends AppCompatActivity {
@@ -21,7 +23,7 @@ public class WebViewActivity extends AppCompatActivity {
     private static final String TAG = "RailBridge.WebViewActivity";
 
     private WebView webView;
-    private MockRailSdk mockRailSdk;
+    private RailPlusSdkAdapter sdkAdapter;
     private ErrorLogger errorLogger;
     private NativeBridge nativeBridge;
 
@@ -30,17 +32,17 @@ public class WebViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_webview);
 
-        mockRailSdk = new MockRailSdk();
+        sdkAdapter = new MockRailSdkAdapter(new MockRailSdk());
         errorLogger = ErrorLogger.getInstance(this);
         errorLogger.setCrashlyticsEnabled(true);
 
         webView = findViewById(R.id.webView);
         setupWebView();
 
-        nativeBridge = new NativeBridge(webView, mockRailSdk, errorLogger);
+        nativeBridge = new NativeBridge(webView, sdkAdapter, errorLogger);
         webView.addJavascriptInterface(nativeBridge, "RailBridge");
 
-        mockRailSdk.initialize(new MockRailSdk.SdkCallback<Boolean>() {
+        sdkAdapter.initialize(new RailPlusSdkAdapter.Callback<Boolean>() {
             @Override
             public void onSuccess(Boolean result) {
                 Log.d(TAG, "SDK initialized successfully");
@@ -102,8 +104,8 @@ public class WebViewActivity extends AppCompatActivity {
         if (nativeBridge != null) {
             nativeBridge.destroy();
         }
-        if (mockRailSdk != null) {
-            mockRailSdk.shutdown();
+        if (sdkAdapter != null) {
+            sdkAdapter.shutdown();
         }
         if (webView != null) {
             webView.removeJavascriptInterface("RailBridge");
