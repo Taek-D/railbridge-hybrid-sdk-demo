@@ -14,7 +14,7 @@
 
 - [ ] **SDK-01**: Android bridge calls go through a `RailPlusSdkAdapter` seam instead of depending directly on `MockRailSdk`.
 - [ ] **SDK-02**: The existing `MockRailSdk` remains available behind the adapter so the current Android demo flow keeps working.
-- [ ] **SDK-03**: The Android mock SDK can deterministically simulate timeout, internal error, callback loss, duplicate callback, and retry exhaustion scenarios.
+- [x] **SDK-03**: The Android mock SDK can deterministically simulate timeout, internal error, callback loss, duplicate callback, and retry exhaustion scenarios.
 
 ### Bridge Contract
 
@@ -23,8 +23,8 @@
 
 ### Logging
 
-- [ ] **LOG-01**: Each request is traceable across JS entry, native validation, SDK start, SDK callback, and JS callback using a shared `correlationId`.
-- [ ] **LOG-02**: Logs can be exported as structured JSON or saved so SDK issues can be demonstrated with evidence beyond on-screen text.
+- [x] **LOG-01**: Each request is traceable across JS entry, native validation, SDK start, SDK callback, and JS callback using a shared `correlationId`.
+- [x] **LOG-02**: Logs can be exported as structured JSON or saved so SDK issues can be demonstrated with evidence beyond on-screen text.
 
 ### Android Stability
 
@@ -32,7 +32,7 @@
 
 ### WebView UI
 
-- [ ] **UI-01**: The current WebView demo screen keeps the existing actions and adds a scenario panel plus richer log inspection without removing current usability.
+- [x] **UI-01**: The current WebView demo screen keeps the existing actions and adds a scenario panel plus richer log inspection without removing current usability.
 
 ### iOS Parity
 
