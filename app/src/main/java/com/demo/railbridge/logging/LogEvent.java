@@ -46,6 +46,30 @@ public class LogEvent {
         return id;
     }
 
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public boolean isResolved() {
+        return resolved;
+    }
+
     public JSONObject toJsonObject() {
         try {
             JSONObject object = new JSONObject();
@@ -71,6 +95,49 @@ public class LogEvent {
                 object.optString("errorMessage", ""),
                 object.optString("context", ""),
                 object.optBoolean("resolved", false)
+        );
+    }
+
+    public static LogEvent fromTimeline(RequestTimeline timeline) {
+        String finalStatus = timeline.getFinalStatus();
+        String message;
+        String errorCode;
+
+        if ("success".equals(finalStatus)) {
+            message = timeline.isResolvedByRetry() ? "Recovered after retry" : "Completed successfully";
+            errorCode = "RESOLVED";
+        } else if ("incomplete".equals(finalStatus)) {
+            message = "Request incomplete";
+            errorCode = "INCOMPLETE";
+        } else {
+            message = "Request failed";
+            errorCode = "ERROR";
+        }
+
+        JSONObject contextObject = new JSONObject();
+        try {
+            contextObject.put("correlationId", timeline.getCorrelationId());
+            contextObject.put("scenario", timeline.getScenario() == null ? "" : timeline.getScenario());
+            contextObject.put("finalStatus", finalStatus);
+            contextObject.put("finalRetryCount", timeline.getFinalRetryCount());
+            if (timeline.getVendorCode() != null && !timeline.getVendorCode().trim().isEmpty()) {
+                contextObject.put("vendorCode", timeline.getVendorCode());
+            }
+            if (timeline.getRetryable() != null) {
+                contextObject.put("retryable", timeline.getRetryable());
+            }
+        } catch (JSONException e) {
+            throw new IllegalStateException("Failed to serialize legacy context", e);
+        }
+
+        return new LogEvent(
+                timeline.getCorrelationId(),
+                timeline.getUpdatedAt() == null ? Instant.now().toString() : timeline.getUpdatedAt(),
+                timeline.getMethod(),
+                errorCode,
+                message,
+                contextObject.toString(),
+                timeline.isResolvedByRetry() || "success".equals(finalStatus)
         );
     }
 
