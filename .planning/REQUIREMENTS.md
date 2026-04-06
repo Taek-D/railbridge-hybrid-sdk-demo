@@ -1,6 +1,6 @@
 # REQUIREMENTS
 
-**Milestone:** `v0.2 포트폴리오 확장`
+**Milestone:** `v0.2 portfolio expansion`
 **Last Updated:** 2026-04-06
 
 ## In Scope
@@ -8,7 +8,7 @@
 ### Bootstrap
 
 - [ ] **BOOT-01**: The repo can store milestone planning state under `.planning/` with `PROJECT.md`, `STATE.md`, `REQUIREMENTS.md`, and `ROADMAP.md`.
-- [ ] **BOOT-02**: The planning docs explicitly record the missing git connection and the decision path for either `git init` or attaching an existing remote before commit automation is used.
+- [ ] **BOOT-02**: The planning docs explicitly record the git bootstrap path and decision history so later GSD automation can rely on a real repository state.
 
 ### Android SDK Seam
 
@@ -46,7 +46,7 @@
 ## Future Requirements
 
 - [ ] **FUT-01**: Replace the mock adapter with a real vendor SDK integration layer when SDK binaries and contracts are available.
-- [ ] **FUT-02**: Wire structured events into a real Crashlytics / analytics backend with environment-specific configuration.
+- [ ] **FUT-02**: Wire structured events into a real Crashlytics or analytics backend with environment-specific configuration.
 - [ ] **FUT-03**: Add automated regression coverage for Android and iOS bridge flows in CI.
 
 ## Out Of Scope

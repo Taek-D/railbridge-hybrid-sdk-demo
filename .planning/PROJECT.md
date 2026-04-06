@@ -11,8 +11,7 @@ Android Java + WebView bridge demo for simulating a hybrid transport-card SDK in
 - Android `JavascriptInterface` bridge methods for charge, balance, SDK status, and JS error reporting
 - A mock SDK with retry handling and local error logging
 - A runnable Android Studio project with verified emulator flow
-
-The next milestone turns this from a single-platform demo into a portfolio-ready troubleshooting sample that better reflects hybrid app stabilization work.
+- A GSD milestone structure for turning the demo into a portfolio-ready troubleshooting sample
 
 ## Core Value
 
@@ -20,19 +19,19 @@ Keep the existing Android demo stable while layering in architecture seams, rich
 
 ## Current Context
 
-- Android build currently succeeds with Gradle wrapper and Android Studio
-- Existing Android demo flow is already manually verified on emulator
-- Bridge methods currently depend directly on `MockRailSdk`
-- Structured tracing, scenario control, and iOS parity are not implemented yet
-- The workspace is not currently connected to a git repository, so GSD commit steps are blocked until git is initialized or the repo is attached to an existing remote
+- Android build succeeds with the Gradle wrapper and Android Studio
+- Existing Android demo flow is manually verified on emulator
+- Phase 2 decoupled the bridge from `MockRailSdk` via `RailPlusSdkAdapter`
+- Phase 3 planning is now complete for deterministic scenario simulation, request-timeline diagnostics, and structured JSON export
+- Git is initialized locally, so GSD document commits are now available
 
-## Current Milestone: v0.2 포트폴리오 확장
+## Current Milestone: v0.2 portfolio expansion
 
 **Goal:** Convert the current Android-only demo into a portfolio-ready hybrid SDK stabilization sample without breaking the existing Android demo flow.
 
 **Target features:**
-- Add an Android adapter seam and failure-scenario controls without removing current bridge actions
-- Introduce correlation-based structured logging, exportable diagnostics, and bridge hardening
+- Add deterministic Android failure scenarios and structured diagnostics without removing current bridge actions
+- Introduce correlation-based timeline logging, exportable evidence, and bridge hardening
 - Add a runnable iOS parity demo with the same bridge contract and mock SDK scenario model
 - Document the architecture, debugging approach, and validation story as portfolio artifacts
 
@@ -60,8 +59,8 @@ Keep the existing Android demo stable while layering in architecture seams, rich
 
 - Existing Android `requestCharge`, `getBalance`, `getSdkStatus`, and `reportError` flows must keep working
 - The repo currently has no iOS project scaffold
-- The repo currently has no git metadata, so milestone commit automation cannot run yet
-- Windows path contains non-ASCII characters, so Android tooling compatibility must stay intact
+- Windows path contains non-ASCII characters, so Android unit tests must run from an ASCII-path copy in this environment
+- Runtime WebView verification is still manual or `adb`-assisted because the repo has no stable instrumentation harness yet
 
 ## Evolution
 

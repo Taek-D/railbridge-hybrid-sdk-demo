@@ -72,7 +72,7 @@ Plans:
 2. A single request can be followed across bridge and SDK stages via `correlationId`.
 3. Logs can be exported or saved in a structured form.
 4. The WebView UI still supports the current demo actions and also exposes scenario controls.
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
 - [ ] 03-01: Add deterministic failure scenario configuration and bridge-stage tracing
@@ -141,4 +141,4 @@ Plans:
 
 ## Next Up
 
-Recommended next command: `$gsd-discuss-phase 3`
+Recommended next command: `$gsd-execute-phase 3`
