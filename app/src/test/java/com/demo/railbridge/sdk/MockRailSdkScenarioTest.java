@@ -27,14 +27,15 @@ public class MockRailSdkScenarioTest {
         controller.setActivePreset(ScenarioPreset.TIMEOUT);
         MockRailSdkAdapter adapter = new MockRailSdkAdapter(backend, controller);
         RecordingCallback<ChargeResult> firstCallback = new RecordingCallback<>();
-        RecordingCallback<ChargeResult> secondCallback = new RecordingCallback<>();
 
         adapter.requestCharge("CARD_001", 10000, firstCallback);
-        adapter.requestCharge("CARD_001", 10000, secondCallback);
 
         assertEquals(1, firstCallback.errorCount);
         assertEquals(SdkErrorCode.ERR_NETWORK_TIMEOUT, firstCallback.lastError);
         assertEquals(0, backend.chargeCallCount);
+
+        RecordingCallback<ChargeResult> secondCallback = new RecordingCallback<>();
+        adapter.requestCharge("CARD_001", 10000, secondCallback);
 
         assertEquals(1, secondCallback.successCount);
         assertEquals("TXN_123", secondCallback.lastSuccess.getTransactionId());

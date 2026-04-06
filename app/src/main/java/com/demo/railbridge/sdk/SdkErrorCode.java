@@ -6,6 +6,7 @@ public enum SdkErrorCode {
     ERR_INSUFFICIENT_BALANCE("1003", "Insufficient balance"),
     ERR_INVALID_CARD("1004", "Invalid card"),
     ERR_TIMEOUT("1005", "Request timeout"),
+    ERR_VENDOR_INTERNAL("1006", "Vendor internal error"),
     ERR_UNKNOWN("9999", "Unknown error"),
     RETRY_EXHAUSTED("9001", "Retry attempts exhausted");
 
