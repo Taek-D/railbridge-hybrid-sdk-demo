@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailBridge Demo</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin: 0 auto;
+            max-width: 600px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #fff;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .bridge-status {
+            border-radius: 12px;
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+            padding: 4px 12px;
+        }
+
+        .bridge-ready {
+            background: #38ef7d;
+            color: #1a4731;
+        }
+
+        .bridge-waiting {
+            background: #fee140;
+            color: #3d3225;
+        }
+
+        .form-section,
+        .button-section,
+        .log-section {
+            border-bottom: 1px solid #e0e0e0;
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            color: #333;
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            padding: 12px 16px;
+            width: 100%;
+        }
+
+        .form-group input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .button-section {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 14px 20px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-charge {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .btn-balance {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-status {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .btn-error {
+            background: linear-gradient(135deg, #f5576c 0%, #ff6b6b 100%);
+        }
+
+        .log-section {
+            border-bottom: none;
+        }
+
+        .log-section h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            border-radius: 8px;
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .log-entry {
+            border-radius: 4px;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            word-break: break-word;
+        }
+
+        .log-success {
+            background: #1a4731;
+            border-left: 4px solid #38ef7d;
+            color: #38ef7d;
+        }
+
+        .log-error {
+            background: #4a1c24;
+            border-left: 4px solid #f5576c;
+            color: #f5576c;
+        }
+
+        .log-info {
+            background: #1a3a4a;
+            border-left: 4px solid #4facfe;
+            color: #4facfe;
+        }
+
+        .timestamp {
+            font-size: 10px;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+
+        .clear-btn {
+            background: #666;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 12px;
+            padding: 8px 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RailBridge Demo</h1>
+            <p>WebView - Native Bridge test console</p>
+            <div id="bridgeStatus" class="bridge-status bridge-waiting">Waiting for bridge...</div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label for="cardId">Card ID</label>
+                <input type="text" id="cardId" value="CARD_001" placeholder="CARD_001">
+            </div>
+            <div class="form-group">
+                <label for="amount">Charge amount</label>
+                <input type="number" id="amount" value="10000" placeholder="10000">
+            </div>
+        </div>
+
+        <div class="button-section">
+            <button class="btn btn-charge" onclick="requestCharge()">Request charge</button>
+            <button class="btn btn-balance" onclick="getBalance()">Get balance</button>
+            <button class="btn btn-status" onclick="getSdkStatus()">SDK status</button>
+            <button class="btn btn-error" onclick="reportError()">Report JS error</button>
+        </div>
+
+        <div class="log-section">
+            <h3>Result log</h3>
+            <div id="logContainer" class="log-container"></div>
+            <button class="clear-btn" onclick="clearLogs()">Clear logs</button>
+        </div>
+    </div>
+
+    <script>
+        const logContainer = document.getElementById("logContainer");
+        const bridgeStatusEl = document.getElementById("bridgeStatus");
+
+        function addLog(message, type = "info") {
+            const timestamp = new Date().toLocaleTimeString("en-US");
+            const logEntry = document.createElement("div");
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span>${message}`;
+            logContainer.insertBefore(logEntry, logContainer.firstChild);
+
+            while (logContainer.children.length > 100) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+
+        function clearLogs() {
+            logContainer.innerHTML = "";
+            addLog("Logs cleared.", "info");
+        }
+
+        window.addEventListener("bridgeReady", () => {
+            bridgeStatusEl.textContent = "Bridge connected";
+            bridgeStatusEl.className = "bridge-status bridge-ready";
+            addLog("Native bridge is ready.", "success");
+        });
+
+        function requestCharge() {
+            const cardId = document.getElementById("cardId").value.trim();
+            const amount = parseInt(document.getElementById("amount").value, 10);
+
+            if (!cardId || Number.isNaN(amount) || amount <= 0) {
+                addLog("Enter a valid card ID and a positive amount.", "error");
+                return;
+            }
+
+            addLog(`Charge requested: cardId=${cardId}, amount=${amount.toLocaleString()}`, "info");
+            RailBridge.requestCharge(JSON.stringify({ cardId, amount }));
+        }
+
+        function getBalance() {
+            const cardId = document.getElementById("cardId").value.trim();
+            if (!cardId) {
+                addLog("Enter a card ID.", "error");
+                return;
+            }
+
+            addLog(`Balance requested: cardId=${cardId}`, "info");
+            RailBridge.getBalance(JSON.stringify({ cardId }));
+        }
+
+        function getSdkStatus() {
+            addLog("Checking SDK status.", "info");
+            RailBridge.getSdkStatus();
+        }
+
+        function reportError() {
+            addLog("Sending JS error report.", "info");
+            RailBridge.reportError(JSON.stringify({
+                code: "ERR_TEST_001",
+                message: "Synthetic JS error",
+                context: "Triggered from the demo page"
+            }));
+        }
+
+        function handleSuccess(result) {
+            const method = result.method;
+            const retryCount = result.retryCount || 0;
+            const data = result.data || {};
+
+            let message = `<strong>[Success] ${method}</strong>`;
+            if (retryCount > 0) {
+                message += ` <span style="color:#fee140;">[Recovered after ${retryCount} retries]</span>`;
+            }
+            message += "<br>";
+
+            if (method === "requestCharge") {
+                message += `Transaction ID: ${data.transactionId}<br>`;
+                message += `Amount: ${Number(data.amount).toLocaleString()}<br>`;
+                message += `Balance: ${Number(data.balance).toLocaleString()}`;
+            } else if (method === "getBalance") {
+                message += `Card ID: ${data.cardId}<br>`;
+                message += `Balance: ${Number(data.balance).toLocaleString()}`;
+            } else if (method === "getSdkStatus") {
+                message += `Initialized: ${data.initialized ? "Yes" : "No"}<br>`;
+                message += `Version: ${data.version}`;
+            }
+
+            addLog(message, "success");
+        }
+
+        function handleError(result) {
+            const method = result.method;
+            const error = result.error || {};
+            const logId = result.logId;
+
+            let message = `<strong>[Error] ${method}</strong><br>`;
+            message += `Code: ${error.code}<br>`;
+            message += `Message: ${error.message}`;
+
+            if ((error.retryCount || 0) > 0) {
+                message += `<br><span style="color:#fee140;">[Failed after ${error.retryCount} retries]</span>`;
+            }
+
+            if (logId) {
+                message += `<br>Log ID: ${logId}`;
+            }
+
+            addLog(message, "error");
+        }
+
+        window.onBridgeResult = function (resultJson) {
+            try {
+                const result = JSON.parse(resultJson);
+                if (result.status === "success") {
+                    handleSuccess(result);
+                } else if (result.status === "error") {
+                    handleError(result);
+                } else if (result.status === "received") {
+                    addLog(`Native acknowledged the error report: ${result.message}`, "info");
+                } else {
+                    addLog(`Unknown result: ${resultJson}`, "info");
+                }
+            } catch (error) {
+                addLog(`Failed to parse bridge result: ${error.message}`, "error");
+                addLog(`Raw payload: ${resultJson}`, "error");
+            }
+        };
+
+        addLog("Page loaded. Waiting for native bridge...", "info");
+    </script>
+</body>
+</html>
