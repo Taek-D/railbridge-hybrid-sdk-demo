@@ -62,6 +62,20 @@ public final class BridgeResponseFactory {
         }
     }
 
+    public static String attachMetadata(String resultJson, Metadata metadata) {
+        if (resultJson == null || resultJson.trim().isEmpty() || metadata == null) {
+            return resultJson;
+        }
+
+        try {
+            JSONObject response = new JSONObject(resultJson);
+            addMetadata(response, metadata);
+            return response.toString();
+        } catch (JSONException e) {
+            return resultJson;
+        }
+    }
+
     public static String buildError(
             String method,
             SdkErrorCode errorCode,
@@ -129,6 +143,18 @@ public final class BridgeResponseFactory {
         if (metadata.getDurationMs() != null) {
             response.put("durationMs", metadata.getDurationMs());
         }
+        if (hasText(metadata.getScenario())) {
+            response.put("scenario", metadata.getScenario());
+        }
+        if (hasText(metadata.getVendorCode())) {
+            response.put("vendorCode", metadata.getVendorCode());
+        }
+        if (metadata.getRetryable() != null) {
+            response.put("retryable", metadata.getRetryable());
+        }
+        if (metadata.getResolvedByRetry() != null) {
+            response.put("resolvedByRetry", metadata.getResolvedByRetry());
+        }
     }
 
     private static boolean hasText(String value) {
@@ -142,6 +168,10 @@ public final class BridgeResponseFactory {
         private final String platform;
         private final String stage;
         private final Long durationMs;
+        private final String scenario;
+        private final String vendorCode;
+        private final Boolean retryable;
+        private final Boolean resolvedByRetry;
 
         public Metadata(
                 String callbackId,
@@ -150,11 +180,29 @@ public final class BridgeResponseFactory {
                 String stage,
                 Long durationMs
         ) {
+            this(callbackId, correlationId, platform, stage, durationMs, null, null, null, null);
+        }
+
+        public Metadata(
+                String callbackId,
+                String correlationId,
+                String platform,
+                String stage,
+                Long durationMs,
+                String scenario,
+                String vendorCode,
+                Boolean retryable,
+                Boolean resolvedByRetry
+        ) {
             this.callbackId = callbackId;
             this.correlationId = correlationId;
             this.platform = platform;
             this.stage = stage;
             this.durationMs = durationMs;
+            this.scenario = scenario;
+            this.vendorCode = vendorCode;
+            this.retryable = retryable;
+            this.resolvedByRetry = resolvedByRetry;
         }
 
         public String getCallbackId() {
@@ -175,6 +223,22 @@ public final class BridgeResponseFactory {
 
         public Long getDurationMs() {
             return durationMs;
+        }
+
+        public String getScenario() {
+            return scenario;
+        }
+
+        public String getVendorCode() {
+            return vendorCode;
+        }
+
+        public Boolean getRetryable() {
+            return retryable;
+        }
+
+        public Boolean getResolvedByRetry() {
+            return resolvedByRetry;
         }
     }
 }
