@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v0.2
 milestone_name: milestone
-status: Ready for planning
-last_updated: "2026-04-08T17:05:00+09:00"
+status: Ready for execution
+last_updated: "2026-04-08T17:25:00+09:00"
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 7
 ---
 
 # STATE
@@ -17,20 +17,20 @@ progress:
 
 ## Current Position
 
-Phase: 05 (ios-parity-demo) context gathered
-Plan: 0 of 2 planned
+Phase: 05 (ios-parity-demo) planned
+Plan: 2 of 2 planned
 
 - Milestone: `v0.2 portfolio expansion`
 - Phase: `5 - iOS Parity Demo`
-- Status: `Context gathered`
-- Last activity: `Captured Phase 5 defaults for iOS project placement, parity depth, shared WebView contract, and simulator-first verification`
+- Status: `Planned`
+- Last activity: `Created 05-RESEARCH.md, 05-VALIDATION.md, 05-01-PLAN.md, and 05-02-PLAN.md for the iOS parity demo`
 
 ## Immediate Next Step
 
-Plan Phase 5 by:
+Execute Phase 5 by:
 
-1. Planning `05-01` around a fresh `ios/` Xcode scaffold that mirrors the Android bridge contract and shared diagnostics page.
-2. Planning `05-02` around Swift-side scenario, diagnostics, and simulator-smoke parity with the Android baseline.
+1. Building `05-01` to create the `ios/RailBridgeIOS` app shell, bundled diagnostics page, and Android-aligned bridge contract.
+2. Building `05-02` to mirror scenario/logging/hardening behavior in Swift and verify the flow on an iOS simulator.
 
 ## Known Blockers
 
@@ -45,6 +45,7 @@ Plan Phase 5 by:
 - Manual verification through the emulator WebView DevTools socket confirmed preserved four-action flow, retry-recovery evidence, incomplete callback-loss visibility, and `schemaVersion=1` diagnostics export grouped by `correlationId`.
 - Phase 4 now adds `BridgeRequestCoordinator`, explicit `inFlightRequests`, timeout conversion for callback loss, duplicate-callback suppression, and teardown-safe abandonment with emulator verification.
 - Phase 5 context locks iOS to a new `ios/` subtree, a lightweight parity app shape, reuse of the existing diagnostics page/bridge contract, and simulator-first smoke verification.
+- Phase 5 planning now formalizes an Xcode-openable `ios/RailBridgeIOS` app, Android-aligned bridge payloads, Swift mirror seams for scenario/logging/ownership, and simulator-smoke verification as the execution target.
 - Temporary QA artifacts from validation remain in the workspace and are ignored by git.
 
 ## Decisions Made
@@ -54,6 +55,7 @@ Plan Phase 5 by:
 - For hardening, let the bridge own timeout and callback-acceptance rules while the adapter keeps reproducing duplicate and missing-callback scenarios.
 - Preserve Phase 4 hardening as an Android-only seam so Phase 5 can mirror the same rules on iOS without back-porting platform abstractions prematurely.
 - Build Phase 5 as a runnable parity demo under `ios/` instead of broadening into a production-style iOS app.
+- Preserve Android as the source-of-truth for visible diagnostics UX while allowing iOS-specific injected bridge bootstrap code where `WKWebView` transport differs.
 
 ## Performance Metrics
 
@@ -65,8 +67,8 @@ Plan Phase 5 by:
 ## Session Info
 
 - Last session: `2026-04-08`
-- Stopped at: `Phase 05 context gathered`
+- Stopped at: `Phase 05 planned`
 
 ## Recommended Command
 
-- `$gsd-plan-phase 5`
+- `$gsd-execute-phase 5`
