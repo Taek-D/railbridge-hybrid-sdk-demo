@@ -141,4 +141,4 @@ Plans:
 
 ## Next Up
 
-Recommended next command: `$gsd-discuss-phase 5`
+Recommended next command: `$gsd-execute-phase 5`
