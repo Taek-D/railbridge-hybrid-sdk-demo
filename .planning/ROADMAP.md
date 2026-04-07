@@ -1,7 +1,7 @@
 # ROADMAP
 
 **Milestone:** `v0.2 portfolio expansion`
-**Last Updated:** 2026-04-06
+**Last Updated:** 2026-04-08
 
 ## Summary
 
@@ -14,7 +14,7 @@
 - [x] **Phase 1: Milestone Bootstrap** - Establish GSD planning state and record bootstrap constraints
 - [x] **Phase 2: Android Adapter Seam** - Introduce the adapter seam and preserve the current bridge contract
 - [x] **Phase 3: Logging and Failure Simulation** - Add deterministic scenario control and structured diagnostic output
-- [ ] **Phase 4: Android Bridge Hardening** - Make the bridge resilient to async race conditions and teardown timing
+- [x] **Phase 4: Android Bridge Hardening** - Make the bridge resilient to async race conditions and teardown timing
 - [ ] **Phase 5: iOS Parity Demo** - Build a runnable iOS sample that mirrors the Android integration model
 - [ ] **Phase 6: Portfolio Documentation and Validation** - Turn the implementation into a portfolio-ready story with validation evidence
 
@@ -92,7 +92,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 04-01: Add in-flight request, timeout, and teardown safety to Android bridge execution
+- [x] 04-01: Add in-flight request, timeout, and teardown safety to Android bridge execution
 
 ### Phase 5: iOS Parity Demo
 
@@ -135,10 +135,10 @@ Plans:
 | 1. Milestone Bootstrap | 1/1 | Complete | 2026-04-06 |
 | 2. Android Adapter Seam | 2/2 | Complete | 2026-04-06 |
 | 3. Logging and Failure Simulation | 2/2 | Complete | 2026-04-06 |
-| 4. Android Bridge Hardening | 0/1 | Not started | - |
+| 4. Android Bridge Hardening | 1/1 | Complete | 2026-04-08 |
 | 5. iOS Parity Demo | 0/2 | Not started | - |
 | 6. Portfolio Documentation and Validation | 0/2 | Not started | - |
 
 ## Next Up
 
-Recommended next command: `$gsd-execute-phase 4`
+Recommended next command: `$gsd-discuss-phase 5`
