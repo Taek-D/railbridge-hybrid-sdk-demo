@@ -108,8 +108,8 @@ Plans:
 **Plans:** TBD
 
 Plans:
-- [ ] 05-01: Scaffold iOS parity demo and align bridge methods with Android
-- [ ] 05-02: Mirror failure scenarios and logging contracts on iOS
+- [x] 05-01: Scaffold iOS parity demo and align bridge methods with Android
+- [x] 05-02: Mirror failure scenarios and logging contracts on iOS
 
 ### Phase 6: Portfolio Documentation and Validation
 
@@ -136,9 +136,9 @@ Plans:
 | 2. Android Adapter Seam | 2/2 | Complete | 2026-04-06 |
 | 3. Logging and Failure Simulation | 2/2 | Complete | 2026-04-06 |
 | 4. Android Bridge Hardening | 1/1 | Complete | 2026-04-08 |
-| 5. iOS Parity Demo | 0/2 | Not started | - |
+| 5. iOS Parity Demo | 2/2 | Awaiting verification | - |
 | 6. Portfolio Documentation and Validation | 0/2 | Not started | - |
 
 ## Next Up
 
-Recommended next command: `$gsd-execute-phase 5`
+Recommended next command: `$gsd-verify-work 05`
