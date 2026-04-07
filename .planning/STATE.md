@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v0.2
 milestone_name: milestone
-status: Ready for discussion
-last_updated: "2026-04-08T16:28:00+09:00"
+status: Ready for planning
+last_updated: "2026-04-08T17:05:00+09:00"
 progress:
   total_phases: 6
   completed_phases: 4
@@ -17,20 +17,20 @@ progress:
 
 ## Current Position
 
-Phase: 04 (android-bridge-hardening) completed
-Plan: 1 of 1 completed
+Phase: 05 (ios-parity-demo) context gathered
+Plan: 0 of 2 planned
 
 - Milestone: `v0.2 portfolio expansion`
-- Phase: `4 - Android Bridge Hardening`
-- Status: `Completed`
-- Last activity: `Executed 04-01 with request ownership, timeout watchdog, duplicate suppression, explicit in-flight diagnostics, and teardown-safe delivery verification`
+- Phase: `5 - iOS Parity Demo`
+- Status: `Context gathered`
+- Last activity: `Captured Phase 5 defaults for iOS project placement, parity depth, shared WebView contract, and simulator-first verification`
 
 ## Immediate Next Step
 
-Prepare Phase 5 by:
+Plan Phase 5 by:
 
-1. Discussing `05-01` iOS project shape so the parity demo can mirror the Android bridge contract without disturbing the current Android baseline.
-2. Deciding whether the iOS sample lives under `ios/` as a fresh Xcode scaffold or as a standalone sibling demo folder.
+1. Planning `05-01` around a fresh `ios/` Xcode scaffold that mirrors the Android bridge contract and shared diagnostics page.
+2. Planning `05-02` around Swift-side scenario, diagnostics, and simulator-smoke parity with the Android baseline.
 
 ## Known Blockers
 
@@ -44,6 +44,7 @@ Prepare Phase 5 by:
 - Phase 3 now delivers deterministic scenario presets, correlation-grouped request timelines, additive bridge metadata, and an in-page diagnostics panel on the existing WebView route.
 - Manual verification through the emulator WebView DevTools socket confirmed preserved four-action flow, retry-recovery evidence, incomplete callback-loss visibility, and `schemaVersion=1` diagnostics export grouped by `correlationId`.
 - Phase 4 now adds `BridgeRequestCoordinator`, explicit `inFlightRequests`, timeout conversion for callback loss, duplicate-callback suppression, and teardown-safe abandonment with emulator verification.
+- Phase 5 context locks iOS to a new `ios/` subtree, a lightweight parity app shape, reuse of the existing diagnostics page/bridge contract, and simulator-first smoke verification.
 - Temporary QA artifacts from validation remain in the workspace and are ignored by git.
 
 ## Decisions Made
@@ -52,6 +53,7 @@ Prepare Phase 5 by:
 - Render timeline inspection and export on the existing WebView page so incomplete callback-loss flows remain inspectable in the same operator workflow.
 - For hardening, let the bridge own timeout and callback-acceptance rules while the adapter keeps reproducing duplicate and missing-callback scenarios.
 - Preserve Phase 4 hardening as an Android-only seam so Phase 5 can mirror the same rules on iOS without back-porting platform abstractions prematurely.
+- Build Phase 5 as a runnable parity demo under `ios/` instead of broadening into a production-style iOS app.
 
 ## Performance Metrics
 
@@ -63,8 +65,8 @@ Prepare Phase 5 by:
 ## Session Info
 
 - Last session: `2026-04-08`
-- Stopped at: `Completed Phase 04 execution and verification`
+- Stopped at: `Phase 05 context gathered`
 
 ## Recommended Command
 
-- `$gsd-discuss-phase 5`
+- `$gsd-plan-phase 5`
