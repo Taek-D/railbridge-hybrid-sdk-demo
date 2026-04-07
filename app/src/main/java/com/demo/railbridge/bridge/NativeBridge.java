@@ -33,12 +33,17 @@ public class NativeBridge {
 
     private static final String TAG = "RailBridge.NativeBridge";
     private static final String PLATFORM_ANDROID = "android";
+    private static final long REQUEST_TIMEOUT_MS = 5000L;
+    private static final String VENDOR_TIMEOUT = "VENDOR_TIMEOUT";
+    private static final String VENDOR_INTERNAL = "VENDOR_INTERNAL";
 
     private final WebView webView;
     private final RailPlusSdkAdapter sdkAdapter;
     private final ErrorLogger errorLogger;
     private final RetryHandler retryHandler;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final BridgeRequestCoordinator requestCoordinator =
+            new BridgeRequestCoordinator(REQUEST_TIMEOUT_MS);
 
     private volatile boolean destroyed;
 
@@ -66,6 +71,10 @@ public class NativeBridge {
             final AtomicInteger sdkAttempts = new AtomicInteger(0);
 
             recordStage(requestContext, "native_validation", 0, null, null, null, null);
+            beginTrackedRequest(
+                    requestContext,
+                    buildChargeFailureContext(cardId, amount, requestContext.getCorrelationId())
+            );
 
             retryHandler.execute(new RetryHandler.RetryTask() {
                 @Override
@@ -81,6 +90,12 @@ public class NativeBridge {
                             int retryCount = Math.max(0, attempt - 1);
                             String vendorCode = resolveSuccessVendorCode(requestContext, retryCount);
                             Boolean retryable = resolveSuccessRetryable(requestContext, retryCount);
+                            BridgeRequestCoordinator.Decision decision =
+                                    requestCoordinator.acceptSuccess(requestContext.getCorrelationId(), retryCount);
+                            if (!decision.isAccepted()) {
+                                recordIgnoredSdkCallback(requestContext, retryCount, vendorCode, retryable, decision);
+                                return;
+                            }
                             boolean resolvedByRetry = retryCount > 0;
                             recordStage(
                                     requestContext,
@@ -96,15 +111,46 @@ public class NativeBridge {
 
                         @Override
                         public void onError(SdkErrorCode errorCode) {
+                            int retryCount = Math.max(0, attempt - 1);
                             boolean finalAttempt = isFinalAttempt(errorCode, attempt);
+                            if (!finalAttempt) {
+                                recordStage(
+                                        requestContext,
+                                        "sdk_callback",
+                                        retryCount,
+                                        resolveVendorCode(errorCode, requestContext.getScenario()),
+                                        RetryHandler.isRetryable(errorCode),
+                                        null,
+                                        null
+                                );
+                                onError.onError(errorCode);
+                                return;
+                            }
+
+                            BridgeRequestCoordinator.Decision decision = requestCoordinator.acceptError(
+                                    requestContext.getCorrelationId(),
+                                    retryCount,
+                                    errorCode
+                            );
+                            if (!decision.isAccepted()) {
+                                recordIgnoredSdkCallback(
+                                        requestContext,
+                                        retryCount,
+                                        resolveVendorCode(errorCode, requestContext.getScenario()),
+                                        RetryHandler.isRetryable(errorCode),
+                                        decision
+                                );
+                                return;
+                            }
+
                             recordStage(
                                     requestContext,
                                     "sdk_callback",
-                                    Math.max(0, attempt - 1),
+                                    retryCount,
                                     resolveVendorCode(errorCode, requestContext.getScenario()),
                                     RetryHandler.isRetryable(errorCode),
-                                    finalAttempt ? "error" : null,
-                                    finalAttempt ? Boolean.FALSE : null
+                                    "error",
+                                    Boolean.FALSE
                             );
                             onError.onError(errorCode);
                         }
@@ -140,7 +186,7 @@ public class NativeBridge {
                     errorLogger.logSdkFailure(
                             "requestCharge",
                             errorCode,
-                            buildFailureContext(cardId, amount, requestContext.getCorrelationId())
+                            buildChargeFailureContext(cardId, amount, requestContext.getCorrelationId())
                     );
                     String vendorCode = resolveVendorCode(errorCode, requestContext.getScenario());
                     String resultJson = BridgeResponseFactory.buildError(
@@ -202,6 +248,10 @@ public class NativeBridge {
             final AtomicInteger sdkAttempts = new AtomicInteger(0);
 
             recordStage(requestContext, "native_validation", 0, null, null, null, null);
+            beginTrackedRequest(
+                    requestContext,
+                    buildBalanceFailureContext(cardId, requestContext.getCorrelationId())
+            );
 
             retryHandler.execute(new RetryHandler.RetryTask() {
                 @Override
@@ -217,6 +267,12 @@ public class NativeBridge {
                             int retryCount = Math.max(0, attempt - 1);
                             String vendorCode = resolveSuccessVendorCode(requestContext, retryCount);
                             Boolean retryable = resolveSuccessRetryable(requestContext, retryCount);
+                            BridgeRequestCoordinator.Decision decision =
+                                    requestCoordinator.acceptSuccess(requestContext.getCorrelationId(), retryCount);
+                            if (!decision.isAccepted()) {
+                                recordIgnoredSdkCallback(requestContext, retryCount, vendorCode, retryable, decision);
+                                return;
+                            }
                             boolean resolvedByRetry = retryCount > 0;
                             recordStage(
                                     requestContext,
@@ -232,15 +288,46 @@ public class NativeBridge {
 
                         @Override
                         public void onError(SdkErrorCode errorCode) {
+                            int retryCount = Math.max(0, attempt - 1);
                             boolean finalAttempt = isFinalAttempt(errorCode, attempt);
+                            if (!finalAttempt) {
+                                recordStage(
+                                        requestContext,
+                                        "sdk_callback",
+                                        retryCount,
+                                        resolveVendorCode(errorCode, requestContext.getScenario()),
+                                        RetryHandler.isRetryable(errorCode),
+                                        null,
+                                        null
+                                );
+                                onError.onError(errorCode);
+                                return;
+                            }
+
+                            BridgeRequestCoordinator.Decision decision = requestCoordinator.acceptError(
+                                    requestContext.getCorrelationId(),
+                                    retryCount,
+                                    errorCode
+                            );
+                            if (!decision.isAccepted()) {
+                                recordIgnoredSdkCallback(
+                                        requestContext,
+                                        retryCount,
+                                        resolveVendorCode(errorCode, requestContext.getScenario()),
+                                        RetryHandler.isRetryable(errorCode),
+                                        decision
+                                );
+                                return;
+                            }
+
                             recordStage(
                                     requestContext,
                                     "sdk_callback",
-                                    Math.max(0, attempt - 1),
+                                    retryCount,
                                     resolveVendorCode(errorCode, requestContext.getScenario()),
                                     RetryHandler.isRetryable(errorCode),
-                                    finalAttempt ? "error" : null,
-                                    finalAttempt ? Boolean.FALSE : null
+                                    "error",
+                                    Boolean.FALSE
                             );
                             onError.onError(errorCode);
                         }
@@ -276,8 +363,7 @@ public class NativeBridge {
                     errorLogger.logSdkFailure(
                             "getBalance",
                             errorCode,
-                            "{\"cardId\":\"" + cardId + "\",\"correlationId\":\""
-                                    + requestContext.getCorrelationId() + "\"}"
+                            buildBalanceFailureContext(cardId, requestContext.getCorrelationId())
                     );
                     String vendorCode = resolveVendorCode(errorCode, requestContext.getScenario());
                     String resultJson = BridgeResponseFactory.buildError(
@@ -413,7 +499,11 @@ public class NativeBridge {
 
     @JavascriptInterface
     public String getDiagnosticsSnapshot() {
-        return buildDiagnosticsPayload(resolveActivePreset(), errorLogger.getDiagnosticsSnapshot());
+        return buildDiagnosticsPayload(
+                resolveActivePreset(),
+                errorLogger.getDiagnosticsSnapshot(),
+                requestCoordinator.snapshot()
+        );
     }
 
     @JavascriptInterface
@@ -421,10 +511,15 @@ public class NativeBridge {
         try {
             return buildDiagnosticsPayload(
                     resolveActivePreset(),
-                    DiagnosticsSnapshot.fromJsonObject(new JSONObject(errorLogger.exportDiagnosticsJson()))
+                    DiagnosticsSnapshot.fromJsonObject(new JSONObject(errorLogger.exportDiagnosticsJson())),
+                    requestCoordinator.snapshot()
             );
         } catch (JSONException e) {
-            return buildDiagnosticsPayload(resolveActivePreset(), errorLogger.getDiagnosticsSnapshot());
+            return buildDiagnosticsPayload(
+                    resolveActivePreset(),
+                    errorLogger.getDiagnosticsSnapshot(),
+                    requestCoordinator.snapshot()
+            );
         }
     }
 
@@ -435,8 +530,68 @@ public class NativeBridge {
 
     public void destroy() {
         destroyed = true;
+        for (InFlightRequestRecord abandoned : requestCoordinator.abandonAll()) {
+            recordAbandonedRequest(abandoned);
+        }
         retryHandler.cancel();
         mainHandler.removeCallbacksAndMessages(null);
+    }
+
+    private void beginTrackedRequest(RequestContext requestContext, String failureContext) {
+        BridgeRequestCoordinator.RegisteredRequest registeredRequest = requestCoordinator.begin(
+                requestContext.getCorrelationId(),
+                requestContext.getMethod(),
+                requestContext.getCallbackId(),
+                requestContext.getScenario(),
+                requestContext.getStartedAt()
+        );
+        scheduleTimeout(requestContext, registeredRequest, failureContext);
+    }
+
+    private void scheduleTimeout(
+            RequestContext requestContext,
+            BridgeRequestCoordinator.RegisteredRequest registeredRequest,
+            String failureContext
+    ) {
+        long delayMs = Math.max(0L, registeredRequest.getTimeoutAtMs() - System.currentTimeMillis());
+        mainHandler.postDelayed(() -> {
+            if (destroyed) {
+                return;
+            }
+            BridgeRequestCoordinator.Decision decision =
+                    requestCoordinator.acceptTimeout(requestContext.getCorrelationId());
+            if (!decision.isAccepted()) {
+                return;
+            }
+            errorLogger.logSdkFailure(requestContext.getMethod(), SdkErrorCode.ERR_TIMEOUT, failureContext);
+            recordStage(
+                    requestContext,
+                    "timeout",
+                    decision.getRetryCount(),
+                    VENDOR_TIMEOUT,
+                    Boolean.FALSE,
+                    "error",
+                    Boolean.FALSE
+            );
+            String resultJson = BridgeResponseFactory.buildError(
+                    requestContext.getMethod(),
+                    SdkErrorCode.ERR_TIMEOUT,
+                    decision.getRetryCount(),
+                    UUID.randomUUID().toString(),
+                    VENDOR_TIMEOUT,
+                    Boolean.FALSE,
+                    buildTimeoutMetadata(requestContext, decision.getRetryCount())
+            );
+            postResultToJs(
+                    resultJson,
+                    requestContext,
+                    decision.getRetryCount(),
+                    VENDOR_TIMEOUT,
+                    Boolean.FALSE,
+                    "error",
+                    false
+            );
+        }, delayMs);
     }
 
     private void postResultToJs(
@@ -450,6 +605,15 @@ public class NativeBridge {
     ) {
         mainHandler.post(() -> {
             if (destroyed) {
+                recordStage(
+                        requestContext,
+                        "js_callback_ignored_destroyed",
+                        retryCount,
+                        vendorCode,
+                        retryable,
+                        null,
+                        null
+                );
                 return;
             }
             recordStage(
@@ -464,6 +628,56 @@ public class NativeBridge {
             String jsCode = "window.onBridgeResult(" + JSONObject.quote(resultJson) + ")";
             webView.evaluateJavascript(jsCode, null);
         });
+    }
+
+    private void recordIgnoredSdkCallback(
+            RequestContext requestContext,
+            int retryCount,
+            String vendorCode,
+            Boolean retryable,
+            BridgeRequestCoordinator.Decision decision
+    ) {
+        recordStage(
+                requestContext,
+                resolveIgnoredCallbackStage(decision),
+                retryCount,
+                vendorCode,
+                retryable,
+                null,
+                null
+        );
+    }
+
+    private String resolveIgnoredCallbackStage(BridgeRequestCoordinator.Decision decision) {
+        if (decision == null || decision.getTerminalState() == null) {
+            return "sdk_callback_ignored_missing";
+        }
+        switch (decision.getTerminalState()) {
+            case SUCCESS:
+            case ERROR:
+                return "sdk_callback_ignored_duplicate";
+            case TIMED_OUT:
+                return "sdk_callback_ignored_timeout";
+            case ABANDONED:
+                return "sdk_callback_ignored_abandoned";
+            case PENDING:
+            default:
+                return "sdk_callback_ignored_pending";
+        }
+    }
+
+    private void recordAbandonedRequest(InFlightRequestRecord abandoned) {
+        errorLogger.recordEvent(TimelineEvent.stage(
+                abandoned.getCorrelationId(),
+                abandoned.getMethod(),
+                abandoned.getScenario(),
+                "bridge_abandoned",
+                Instant.now().toString(),
+                0,
+                abandoned.getElapsedMs(),
+                null,
+                null
+        ));
     }
 
     private BridgeResponseFactory.Metadata buildSuccessMetadata(RequestContext requestContext, int retryCount) {
@@ -488,6 +702,16 @@ public class NativeBridge {
                 vendorCode,
                 retryable,
                 retryCount > 0 && Boolean.TRUE.equals(retryable)
+        );
+    }
+
+    private BridgeResponseFactory.Metadata buildTimeoutMetadata(RequestContext requestContext, int retryCount) {
+        return buildMetadata(
+                requestContext,
+                "timeout",
+                VENDOR_TIMEOUT,
+                Boolean.FALSE,
+                retryCount > 0
         );
     }
 
@@ -537,9 +761,13 @@ public class NativeBridge {
         errorLogger.recordEvent(event);
     }
 
-    private String buildFailureContext(String cardId, int amount, String correlationId) {
+    private String buildChargeFailureContext(String cardId, int amount, String correlationId) {
         return "{\"cardId\":\"" + cardId + "\",\"amount\":" + amount
                 + ",\"correlationId\":\"" + correlationId + "\"}";
+    }
+
+    private String buildBalanceFailureContext(String cardId, String correlationId) {
+        return "{\"cardId\":\"" + cardId + "\",\"correlationId\":\"" + correlationId + "\"}";
     }
 
     private MockRailSdkAdapter getScenarioCapableAdapter() {
@@ -563,7 +791,7 @@ public class NativeBridge {
         }
         ScenarioPreset preset = ScenarioPreset.fromValue(requestContext.getScenario());
         if (preset == ScenarioPreset.TIMEOUT || preset == ScenarioPreset.RETRY_EXHAUSTED) {
-            return "VENDOR_TIMEOUT";
+            return VENDOR_TIMEOUT;
         }
         return null;
     }
@@ -582,12 +810,13 @@ public class NativeBridge {
     private String resolveVendorCode(SdkErrorCode errorCode, String scenario) {
         ScenarioPreset preset = ScenarioPreset.fromValue(scenario);
         if (preset == ScenarioPreset.INTERNAL_ERROR || errorCode == SdkErrorCode.ERR_VENDOR_INTERNAL) {
-            return "VENDOR_INTERNAL";
+            return VENDOR_INTERNAL;
         }
         if (preset == ScenarioPreset.TIMEOUT || preset == ScenarioPreset.RETRY_EXHAUSTED
                 || errorCode == SdkErrorCode.ERR_NETWORK_TIMEOUT
-                || errorCode == SdkErrorCode.RETRY_EXHAUSTED) {
-            return "VENDOR_TIMEOUT";
+                || errorCode == SdkErrorCode.RETRY_EXHAUSTED
+                || errorCode == SdkErrorCode.ERR_TIMEOUT) {
+            return VENDOR_TIMEOUT;
         }
         return null;
     }
@@ -605,6 +834,14 @@ public class NativeBridge {
     }
 
     static String buildDiagnosticsPayload(String activePreset, DiagnosticsSnapshot snapshot) {
+        return buildDiagnosticsPayload(activePreset, snapshot, new ArrayList<InFlightRequestRecord>());
+    }
+
+    static String buildDiagnosticsPayload(
+            String activePreset,
+            DiagnosticsSnapshot snapshot,
+            List<InFlightRequestRecord> inFlightRequests
+    ) {
         try {
             JSONObject payload = new JSONObject();
             payload.put("activePreset", ScenarioPreset.fromValue(activePreset).getValue());
@@ -614,6 +851,13 @@ public class NativeBridge {
                 presets.put(preset);
             }
             payload.put("availablePresets", presets);
+            JSONArray inFlightArray = new JSONArray();
+            if (inFlightRequests != null) {
+                for (InFlightRequestRecord request : inFlightRequests) {
+                    inFlightArray.put(request.toJsonObject());
+                }
+            }
+            payload.put("inFlightRequests", inFlightArray);
             payload.put(
                     "snapshot",
                     snapshot == null
@@ -639,13 +883,22 @@ public class NativeBridge {
         private final String callbackId;
         private final String correlationId;
         private final String scenario;
+        private final String startedAt;
         private final long startedAtMs;
 
-        private RequestContext(String method, String callbackId, String correlationId, String scenario, long startedAtMs) {
+        private RequestContext(
+                String method,
+                String callbackId,
+                String correlationId,
+                String scenario,
+                String startedAt,
+                long startedAtMs
+        ) {
             this.method = method;
             this.callbackId = callbackId;
             this.correlationId = correlationId;
             this.scenario = scenario;
+            this.startedAt = startedAt;
             this.startedAtMs = startedAtMs;
         }
 
@@ -659,12 +912,14 @@ public class NativeBridge {
                     callbackId = null;
                 }
             }
+            long startedAtMs = System.currentTimeMillis();
             return new RequestContext(
                     method,
                     callbackId,
                     UUID.randomUUID().toString(),
                     ScenarioPreset.fromValue(scenario).getValue(),
-                    System.currentTimeMillis()
+                    Instant.now().toString(),
+                    startedAtMs
             );
         }
 
@@ -682,6 +937,10 @@ public class NativeBridge {
 
         String getScenario() {
             return scenario;
+        }
+
+        String getStartedAt() {
+            return startedAt;
         }
 
         long elapsedMs() {

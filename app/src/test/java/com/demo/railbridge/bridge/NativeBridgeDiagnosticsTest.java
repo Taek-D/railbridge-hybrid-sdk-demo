@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -109,5 +110,38 @@ public class NativeBridgeDiagnosticsTest {
         assertFalse(firstTimeline.has("resolvedByRetry"));
         assertEquals("normal", availablePresets.getString(0));
         assertEquals("retry_exhausted", availablePresets.getString(5));
+    }
+
+    @Test
+    public void diagnosticsPayload_includesExplicitInFlightRequests() throws Exception {
+        DiagnosticsSnapshot snapshot = DiagnosticsSnapshot.create(
+                Collections.<RequestTimeline>emptyList(),
+                "2026-04-08T11:00:00Z"
+        );
+
+        JSONObject payload = new JSONObject(
+                NativeBridge.buildDiagnosticsPayload(
+                        "callback_loss",
+                        snapshot,
+                        Arrays.asList(new InFlightRequestRecord(
+                                "corr-inflight",
+                                "requestCharge",
+                                "cb-42",
+                                "pending",
+                                "callback_loss",
+                                "2026-04-08T10:59:58Z",
+                                850L
+                        ))
+                )
+        );
+        JSONObject inFlight = payload.getJSONArray("inFlightRequests").getJSONObject(0);
+
+        assertEquals(1, payload.getJSONArray("inFlightRequests").length());
+        assertEquals("corr-inflight", inFlight.getString("correlationId"));
+        assertEquals("requestCharge", inFlight.getString("method"));
+        assertEquals("cb-42", inFlight.getString("callbackId"));
+        assertEquals("pending", inFlight.getString("state"));
+        assertEquals("callback_loss", inFlight.getString("scenario"));
+        assertEquals(850L, inFlight.getLong("elapsedMs"));
     }
 }
