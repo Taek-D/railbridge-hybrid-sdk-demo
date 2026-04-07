@@ -89,7 +89,7 @@ Plans:
 2. Timed-out requests do not keep hanging indefinitely.
 3. Requests no longer try to write back into a destroyed bridge or closed screen.
 4. In-flight request state is explicit and observable for debugging.
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
 - [ ] 04-01: Add in-flight request, timeout, and teardown safety to Android bridge execution
@@ -141,4 +141,4 @@ Plans:
 
 ## Next Up
 
-Recommended next command: `$gsd-plan-phase 4`
+Recommended next command: `$gsd-execute-phase 4`
