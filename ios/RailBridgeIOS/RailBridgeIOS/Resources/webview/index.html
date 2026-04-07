@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RailBridge Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: linear-gradient(155deg, #243344 0%, #121c25 74%); color: #243648; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; min-height: 100vh; padding: 20px; }
+    .container { background: #fff; border-radius: 20px; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32); margin: 0 auto; max-width: 1040px; overflow: hidden; }
+    .header { background: linear-gradient(135deg, rgba(27, 168, 157, 0.15), rgba(77, 142, 255, 0.12)), linear-gradient(135deg, #213548 0%, #314c63 100%); color: #fff; padding: 28px 24px; text-align: center; }
+    .header h1 { font-size: 28px; margin-bottom: 8px; }
+    .header p { font-size: 13px; opacity: 0.86; }
+    .bridge-status { border-radius: 999px; display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; margin-top: 12px; padding: 6px 14px; text-transform: uppercase; }
+    .bridge-ready { background: #d9f7e7; color: #1e6c47; }
+    .bridge-waiting { background: #fff2c7; color: #695717; }
+    .form-section, .button-section, .diagnostics-section, .log-section { border-bottom: 1px solid #dfe6ed; padding: 24px; }
+    .form-grid, .button-section, .diagnostics-grid, .summary-strip { display: grid; gap: 12px; }
+    .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .button-section { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .diagnostics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .summary-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 14px; }
+    label { color: #243648; display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    input, select { border: 2px solid #dfe6ed; border-radius: 10px; color: #243648; font-size: 15px; padding: 12px 14px; width: 100%; }
+    input:focus, select:focus { border-color: #169f98; outline: none; }
+    .btn, .secondary-btn, .ghost-btn, .clear-btn { border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 700; padding: 14px 18px; transition: transform 0.18s ease, box-shadow 0.18s ease; }
+    .btn:active, .secondary-btn:active, .ghost-btn:active, .clear-btn:active { transform: scale(0.985); }
+    .btn:hover, .secondary-btn:hover, .ghost-btn:hover, .clear-btn:hover { box-shadow: 0 10px 24px rgba(15, 23, 32, 0.15); }
+    .btn { color: #fff; }
+    .btn-charge { background: linear-gradient(135deg, #109e88 0%, #42d68f 100%); }
+    .btn-balance { background: linear-gradient(135deg, #2678d8 0%, #55c1ff 100%); }
+    .btn-status { background: linear-gradient(135deg, #f28e35 0%, #f7cc58 100%); color: #2b2515; }
+    .btn-error { background: linear-gradient(135deg, #d94e6b 0%, #ff7a66 100%); }
+    .secondary-btn { background: #15364a; color: #fff; padding: 12px 16px; }
+    .ghost-btn, .clear-btn { background: #edf3f8; color: #243648; padding: 12px 16px; }
+    .section-head, .card-head, .log-head { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
+    .section-head { align-items: start; margin-bottom: 16px; }
+    .section-title, .card-title, .log-head h3 { font-size: 16px; font-weight: 800; }
+    .section-copy, .card-note, .empty-state { color: #627286; font-size: 13px; line-height: 1.5; }
+    .preset-pill { background: #dff7f5; border: 1px solid rgba(22, 159, 152, 0.28); border-radius: 999px; color: #0f756f; font-size: 12px; font-weight: 800; letter-spacing: 0.04em; padding: 8px 14px; text-transform: uppercase; white-space: nowrap; }
+    .scenario-row { align-items: end; display: grid; gap: 12px; grid-template-columns: minmax(0, 1.4fr) repeat(3, auto); margin-bottom: 18px; }
+    .card { background: #f8fafc; border: 1px solid #e7edf3; border-radius: 18px; padding: 18px; }
+    .summary-item { background: #fff; border: 1px solid #ebf0f5; border-radius: 14px; padding: 12px; }
+    .summary-item span { display: block; }
+    .summary-label { color: #627286; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 6px; text-transform: uppercase; }
+    .summary-value { font-size: 19px; font-weight: 800; }
+    .timeline-list { display: grid; gap: 10px; }
+    .timeline-item { background: #fff; border: 1px solid #e7edf3; border-radius: 14px; cursor: pointer; padding: 14px; text-align: left; width: 100%; }
+    .timeline-item.active { border-color: rgba(22, 159, 152, 0.42); box-shadow: 0 12px 24px rgba(22, 159, 152, 0.14); }
+    .timeline-top { align-items: center; display: flex; gap: 10px; justify-content: space-between; margin-bottom: 10px; }
+    .timeline-method { font-size: 14px; font-weight: 800; }
+    .timeline-status { border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; padding: 4px 10px; text-transform: uppercase; }
+    .status-success { background: #d9f6e6; color: #1e6c47; }
+    .status-error { background: #f9dde0; color: #8b2c3d; }
+    .status-incomplete { background: #fff1c9; color: #6b5617; }
+    .timeline-meta { color: #627286; display: grid; font-size: 12px; gap: 6px; }
+    .detail-tools { display: flex; gap: 10px; margin-bottom: 14px; }
+    .detail { background: #101924; border-radius: 16px; color: #d0e6ff; font-family: "Courier New", monospace; font-size: 12px; line-height: 1.6; min-height: 360px; overflow: auto; padding: 18px; white-space: pre-wrap; word-break: break-word; }
+    .detail.empty { color: #7c92ad; }
+    .log-section { border-bottom: none; }
+    .log-container { background: #121b26; border-radius: 14px; font-family: "Courier New", monospace; font-size: 12px; line-height: 1.6; max-height: 400px; overflow-y: auto; padding: 16px; }
+    .log-entry { border-radius: 8px; margin-bottom: 8px; padding: 10px 12px; word-break: break-word; }
+    .log-success { background: rgba(56, 183, 126, 0.14); border-left: 4px solid #38b77e; color: #7ce0a9; }
+    .log-error { background: rgba(220, 92, 100, 0.16); border-left: 4px solid #dc5c64; color: #ff9ca3; }
+    .log-info { background: rgba(59, 145, 247, 0.14); border-left: 4px solid #3b91f7; color: #8dc6ff; }
+    .timestamp { font-size: 10px; margin-right: 8px; opacity: 0.7; }
+    @media (max-width: 860px) {
+      .form-grid, .button-section, .diagnostics-grid, .summary-strip, .scenario-row { grid-template-columns: 1fr; }
+      .preset-pill { justify-self: start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>RailBridge Demo</h1>
+      <p>Hybrid WebView bridge console with deterministic SDK diagnostics</p>
+      <div id="bridgeStatus" class="bridge-status bridge-waiting">Waiting for bridge...</div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="cardId">Card ID</label>
+          <input type="text" id="cardId" value="CARD_001" placeholder="CARD_001">
+        </div>
+        <div class="form-group">
+          <label for="amount">Charge amount</label>
+          <input type="number" id="amount" value="10000" placeholder="10000">
+        </div>
+      </div>
+    </div>
+
+    <div class="button-section">
+      <button class="btn btn-charge" onclick="requestCharge()">Request charge</button>
+      <button class="btn btn-balance" onclick="getBalance()">Get balance</button>
+      <button class="btn btn-status" onclick="getSdkStatus()">SDK status</button>
+      <button class="btn btn-error" onclick="reportError()">Report JS error</button>
+    </div>
+
+    <div class="diagnostics-section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Diagnostics panel</div>
+          <div class="section-copy">Switch presets, inspect timelines by correlation ID, and export the native evidence that survives even when the JS callback never arrives.</div>
+        </div>
+        <div id="presetPill" class="preset-pill">Preset: normal</div>
+      </div>
+
+      <div class="scenario-row">
+        <div class="form-group">
+          <label for="scenarioPreset">Scenario preset</label>
+          <select id="scenarioPreset"></select>
+        </div>
+        <button class="secondary-btn" onclick="applyScenarioPreset()">Apply preset</button>
+        <button class="ghost-btn" onclick="resetScenario()">Reset to normal</button>
+        <button class="ghost-btn" onclick="refreshDiagnostics('manual')">Refresh view</button>
+      </div>
+
+      <div class="diagnostics-grid">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Request timelines</div>
+          </div>
+          <div class="card-note">Callback-loss requests should remain visible here as incomplete traces even when `window.onBridgeResult(...)` never fires.</div>
+          <div class="summary-strip">
+            <div class="summary-item"><span class="summary-label">Timelines</span><span id="timelineCount" class="summary-value">0</span></div>
+            <div class="summary-item"><span class="summary-label">Incomplete</span><span id="incompleteCount" class="summary-value">0</span></div>
+            <div class="summary-item"><span class="summary-label">Resolved By Retry</span><span id="retryResolvedCount" class="summary-value">0</span></div>
+          </div>
+          <div id="timelineList" class="timeline-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Raw detail</div>
+          </div>
+          <div class="detail-tools">
+            <button class="secondary-btn" onclick="showExport()">Export JSON</button>
+            <button class="ghost-btn" onclick="copyDetail()">Copy detail</button>
+            <button class="ghost-btn" onclick="clearDiagnosticsPanel()">Clear diagnostics</button>
+          </div>
+          <pre id="detailView" class="detail empty">Select a timeline or export the current snapshot.</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="log-section">
+      <div class="log-head">
+        <h3>Result log</h3>
+        <button class="clear-btn" onclick="clearLogs()">Clear logs</button>
+      </div>
+      <div id="logContainer" class="log-container"></div>
+    </div>
+  </div>
+
+  <script>
+    const logContainer = document.getElementById("logContainer");
+    const bridgeStatusEl = document.getElementById("bridgeStatus");
+    const presetSelectEl = document.getElementById("scenarioPreset");
+    const presetPillEl = document.getElementById("presetPill");
+    const timelineListEl = document.getElementById("timelineList");
+    const detailViewEl = document.getElementById("detailView");
+    const timelineCountEl = document.getElementById("timelineCount");
+    const incompleteCountEl = document.getElementById("incompleteCount");
+    const retryResolvedCountEl = document.getElementById("retryResolvedCount");
+
+    const fallbackPresets = ["normal", "timeout", "internal_error", "callback_loss", "duplicate_callback", "retry_exhausted"];
+    const diagnosticsState = { activePreset: "normal", availablePresets: fallbackPresets.slice(), snapshot: { timelines: [] }, selectedCorrelationId: null };
+    let bridgeReady = false;
+    let refreshTimers = [];
+
+    populatePresetOptions(fallbackPresets);
+
+    function addLog(message, type = "info") {
+      const timestamp = new Date().toLocaleTimeString("en-US");
+      const logEntry = document.createElement("div");
+      logEntry.className = `log-entry log-${type}`;
+      logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span>${message}`;
+      logContainer.insertBefore(logEntry, logContainer.firstChild);
+      while (logContainer.children.length > 100) {
+        logContainer.removeChild(logContainer.lastChild);
+      }
+    }
+
+    function clearLogs() {
+      logContainer.innerHTML = "";
+      addLog("Visible result log cleared.", "info");
+    }
+
+    function populatePresetOptions(presets) {
+      const values = Array.isArray(presets) && presets.length > 0 ? presets : fallbackPresets;
+      presetSelectEl.innerHTML = "";
+      values.forEach((preset) => {
+        const option = document.createElement("option");
+        option.value = preset;
+        option.textContent = preset.replace(/_/g, " ");
+        presetSelectEl.appendChild(option);
+      });
+    }
+
+    function setActivePreset(preset) {
+      const safePreset = preset || "normal";
+      diagnosticsState.activePreset = safePreset;
+      presetSelectEl.value = safePreset;
+      presetPillEl.textContent = `Preset: ${safePreset.replace(/_/g, " ")}`;
+    }
+
+    function setDetail(value) {
+      const text = value || "Select a timeline or export the current snapshot.";
+      detailViewEl.textContent = text;
+      detailViewEl.classList.toggle("empty", text.indexOf("Select a timeline") === 0);
+    }
+
+    function prettyJson(value) {
+      return JSON.stringify(value, null, 2);
+    }
+
+    function parseDiagnosticsPayload(rawValue) {
+      if (!rawValue) {
+        return null;
+      }
+      try {
+        return JSON.parse(rawValue);
+      } catch (error) {
+        addLog(`Failed to parse diagnostics payload: ${error.message}`, "error");
+        setDetail(rawValue);
+        return null;
+      }
+    }
+
+    function updateSummary(timelines) {
+      const items = Array.isArray(timelines) ? timelines : [];
+      timelineCountEl.textContent = String(items.length);
+      incompleteCountEl.textContent = String(items.filter((item) => (item.finalStatus || "incomplete") === "incomplete").length);
+      retryResolvedCountEl.textContent = String(items.filter((item) => Boolean(item.resolvedByRetry)).length);
+    }
+
+    function renderDiagnostics(payload) {
+      diagnosticsState.activePreset = payload.activePreset || diagnosticsState.activePreset;
+      diagnosticsState.availablePresets = Array.isArray(payload.availablePresets) && payload.availablePresets.length > 0 ? payload.availablePresets : diagnosticsState.availablePresets;
+      diagnosticsState.snapshot = payload.snapshot || { timelines: [] };
+      populatePresetOptions(diagnosticsState.availablePresets);
+      setActivePreset(diagnosticsState.activePreset);
+      updateSummary(diagnosticsState.snapshot.timelines);
+      renderTimelineList(diagnosticsState.snapshot.timelines);
+    }
+
+    function renderTimelineList(timelines) {
+      timelineListEl.innerHTML = "";
+      if (!Array.isArray(timelines) || timelines.length === 0) {
+        const emptyState = document.createElement("div");
+        emptyState.className = "empty-state";
+        emptyState.textContent = "No diagnostics captured yet. Run a bridge action to populate request evidence.";
+        timelineListEl.appendChild(emptyState);
+        diagnosticsState.selectedCorrelationId = null;
+        setDetail(null);
+        return;
+      }
+
+      const ids = timelines.map((timeline) => timeline.correlationId);
+      if (!ids.includes(diagnosticsState.selectedCorrelationId)) {
+        diagnosticsState.selectedCorrelationId = ids[0];
+      }
+
+      timelines.forEach((timeline) => {
+        const status = timeline.finalStatus || "incomplete";
+        const button = document.createElement("button");
+        button.className = `timeline-item${timeline.correlationId === diagnosticsState.selectedCorrelationId ? " active" : ""}`;
+        button.innerHTML = `
+          <div class="timeline-top">
+            <span class="timeline-method">${timeline.method || "unknown"}</span>
+            <span class="timeline-status status-${status}">${status}</span>
+          </div>
+          <div class="timeline-meta">
+            <span>Correlation: ${timeline.correlationId}</span>
+            <span>Scenario: ${(timeline.scenario || diagnosticsState.activePreset).replace(/_/g, " ")}</span>
+            <span>Stages: ${(timeline.events || []).length} | Retries: ${timeline.finalRetryCount || 0}${timeline.vendorCode ? ` | Vendor: ${timeline.vendorCode}` : ""}</span>
+          </div>
+        `;
+        button.addEventListener("click", () => {
+          diagnosticsState.selectedCorrelationId = timeline.correlationId;
+          showSelectedTimeline();
+          renderTimelineList(diagnosticsState.snapshot.timelines);
+        });
+        timelineListEl.appendChild(button);
+      });
+
+      showSelectedTimeline();
+    }
+
+    function showSelectedTimeline() {
+      const timelines = Array.isArray(diagnosticsState.snapshot.timelines) ? diagnosticsState.snapshot.timelines : [];
+      const current = timelines.find((timeline) => timeline.correlationId === diagnosticsState.selectedCorrelationId);
+      setDetail(current ? prettyJson(current) : null);
+    }
+
+    function refreshDiagnostics(reason = "manual") {
+      if (!bridgeReady || typeof RailBridge === "undefined" || !RailBridge.getDiagnosticsSnapshot) {
+        return;
+      }
+      const payload = parseDiagnosticsPayload(RailBridge.getDiagnosticsSnapshot());
+      if (!payload) {
+        return;
+      }
+      renderDiagnostics(payload);
+      if (reason === "manual") {
+        addLog("Diagnostics snapshot refreshed.", "info");
+      }
+    }
+
+    function scheduleDiagnosticsRefresh() {
+      refreshTimers.forEach((timerId) => window.clearTimeout(timerId));
+      refreshTimers = [150, 900, 3800].map((delay) => window.setTimeout(() => refreshDiagnostics("silent"), delay));
+    }
+
+    function showExport() {
+      if (!bridgeReady || typeof RailBridge === "undefined" || !RailBridge.exportDiagnostics) {
+        addLog("Bridge export is not ready yet.", "error");
+        return;
+      }
+      const payload = parseDiagnosticsPayload(RailBridge.exportDiagnostics());
+      if (!payload) {
+        return;
+      }
+      renderDiagnostics(payload);
+      setDetail(prettyJson(payload));
+      addLog("Structured diagnostics export opened in the detail pane.", "success");
+    }
+
+    function copyDetail() {
+      const text = detailViewEl.textContent || "";
+      if (!text.trim()) {
+        addLog("No diagnostics detail to copy yet.", "error");
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          () => addLog("Diagnostics detail copied to clipboard.", "success"),
+          () => fallbackCopy(text)
+        );
+        return;
+      }
+      fallbackCopy(text);
+    }
+
+    function fallbackCopy(text) {
+      const helper = document.createElement("textarea");
+      helper.value = text;
+      document.body.appendChild(helper);
+      helper.select();
+      document.execCommand("copy");
+      document.body.removeChild(helper);
+      addLog("Diagnostics detail copied to clipboard.", "success");
+    }
+
+    function clearDiagnosticsPanel() {
+      if (!bridgeReady || typeof RailBridge === "undefined" || !RailBridge.clearDiagnostics) {
+        addLog("Bridge diagnostics are not ready yet.", "error");
+        return;
+      }
+      RailBridge.clearDiagnostics();
+      diagnosticsState.selectedCorrelationId = null;
+      refreshDiagnostics("silent");
+      setDetail(null);
+      addLog("Structured diagnostics were cleared.", "info");
+    }
+
+    function applyScenarioPreset() {
+      if (!bridgeReady || typeof RailBridge === "undefined" || !RailBridge.setScenarioPreset) {
+        addLog("Bridge scenario control is not ready yet.", "error");
+        return;
+      }
+      const preset = presetSelectEl.value || "normal";
+      RailBridge.setScenarioPreset(preset);
+      setActivePreset(preset);
+      addLog(`Scenario preset changed to ${preset}.`, "info");
+      scheduleDiagnosticsRefresh();
+    }
+
+    function resetScenario() {
+      if (!bridgeReady || typeof RailBridge === "undefined" || !RailBridge.setScenarioPreset) {
+        addLog("Bridge scenario control is not ready yet.", "error");
+        return;
+      }
+      RailBridge.setScenarioPreset("normal");
+      setActivePreset("normal");
+      addLog("Scenario preset reset to normal.", "info");
+      scheduleDiagnosticsRefresh();
+    }
+
+    function appendMeta(message, result) {
+      const meta = [];
+      if (result.correlationId) { meta.push(`Correlation ID: ${result.correlationId}`); }
+      if (result.scenario) { meta.push(`Scenario: ${String(result.scenario).replace(/_/g, " ")}`); }
+      if (result.stage) { meta.push(`Stage: ${result.stage}`); }
+      if (typeof result.durationMs === "number") { meta.push(`Duration: ${result.durationMs}ms`); }
+      if (result.vendorCode) { meta.push(`Vendor code: ${result.vendorCode}`); }
+      return meta.length > 0 ? `${message}<br>${meta.join("<br>")}` : message;
+    }
+
+    function requestCharge() {
+      const cardId = document.getElementById("cardId").value.trim();
+      const amount = parseInt(document.getElementById("amount").value, 10);
+      if (!cardId || Number.isNaN(amount) || amount <= 0) {
+        addLog("Enter a valid card ID and a positive amount.", "error");
+        return;
+      }
+      addLog(`Charge requested: cardId=${cardId}, amount=${amount.toLocaleString()}`, "info");
+      RailBridge.requestCharge(JSON.stringify({ cardId, amount }));
+      scheduleDiagnosticsRefresh();
+    }
+
+    function getBalance() {
+      const cardId = document.getElementById("cardId").value.trim();
+      if (!cardId) {
+        addLog("Enter a card ID.", "error");
+        return;
+      }
+      addLog(`Balance requested: cardId=${cardId}`, "info");
+      RailBridge.getBalance(JSON.stringify({ cardId }));
+      scheduleDiagnosticsRefresh();
+    }
+
+    function getSdkStatus() {
+      addLog("Checking SDK status.", "info");
+      RailBridge.getSdkStatus();
+      scheduleDiagnosticsRefresh();
+    }
+
+    function reportError() {
+      addLog("Sending JS error report.", "info");
+      RailBridge.reportError(JSON.stringify({ code: "ERR_TEST_001", message: "Synthetic JS error", context: "Triggered from the demo page" }));
+      scheduleDiagnosticsRefresh();
+    }
+
+    function handleSuccess(result) {
+      const data = result.data || {};
+      let message = `<strong>[Success] ${result.method}</strong>`;
+      if ((result.retryCount || 0) > 0 || result.resolvedByRetry) {
+        message += ` <span style="color:#f2b94b;">[Recovered after ${result.retryCount || 0} retries]</span>`;
+      }
+      message += "<br>";
+      if (result.method === "requestCharge") {
+        message += `Transaction ID: ${data.transactionId}<br>Amount: ${Number(data.amount).toLocaleString()}<br>Balance: ${Number(data.balance).toLocaleString()}`;
+      } else if (result.method === "getBalance") {
+        message += `Card ID: ${data.cardId}<br>Balance: ${Number(data.balance).toLocaleString()}`;
+      } else if (result.method === "getSdkStatus") {
+        message += `Initialized: ${data.initialized ? "Yes" : "No"}<br>Version: ${data.version}`;
+      } else {
+        message += "Completed successfully.";
+      }
+      addLog(appendMeta(message, result), "success");
+    }
+
+    function handleError(result) {
+      const error = result.error || {};
+      const vendorCode = result.vendorCode || error.vendorCode;
+      let message = `<strong>[Error] ${result.method}</strong><br>Code: ${error.code}<br>Message: ${error.message}`;
+      if ((error.retryCount || 0) > 0) {
+        message += `<br><span style="color:#f2b94b;">[Failed after ${error.retryCount} retries]</span>`;
+      }
+      if (vendorCode) {
+        message += `<br>Vendor code: ${vendorCode}`;
+      }
+      if (result.logId) {
+        message += `<br>Log ID: ${result.logId}`;
+      }
+      addLog(appendMeta(message, result), "error");
+    }
+
+    window.addEventListener("bridgeReady", () => {
+      bridgeReady = true;
+      bridgeStatusEl.textContent = "Bridge connected";
+      bridgeStatusEl.className = "bridge-status bridge-ready";
+      addLog("Native bridge is ready.", "success");
+      refreshDiagnostics("silent");
+    });
+
+    window.onBridgeResult = function (resultJson) {
+      try {
+        const result = JSON.parse(resultJson);
+        if (result.status === "success") {
+          handleSuccess(result);
+        } else if (result.status === "error") {
+          handleError(result);
+        } else if (result.status === "received") {
+          addLog(`Native acknowledged the error report: ${result.message}`, "info");
+        } else {
+          addLog(`Unknown result: ${resultJson}`, "info");
+        }
+        if (!diagnosticsState.selectedCorrelationId) {
+          setDetail(prettyJson(result));
+        }
+      } catch (error) {
+        addLog(`Failed to parse bridge result: ${error.message}`, "error");
+        setDetail(resultJson);
+      }
+      scheduleDiagnosticsRefresh();
+    };
+
+    addLog("Page loaded. Waiting for native bridge...", "info");
+  </script>
+</body>
+</html>
