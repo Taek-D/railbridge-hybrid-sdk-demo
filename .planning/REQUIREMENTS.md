@@ -7,19 +7,19 @@
 
 ### Bootstrap
 
-- [ ] **BOOT-01**: The repo can store milestone planning state under `.planning/` with `PROJECT.md`, `STATE.md`, `REQUIREMENTS.md`, and `ROADMAP.md`.
-- [ ] **BOOT-02**: The planning docs explicitly record the git bootstrap path and decision history so later GSD automation can rely on a real repository state.
+- [x] **BOOT-01**: The repo can store milestone planning state under `.planning/` with `PROJECT.md`, `STATE.md`, `REQUIREMENTS.md`, and `ROADMAP.md`.
+- [x] **BOOT-02**: The planning docs explicitly record the git bootstrap path and decision history so later GSD automation can rely on a real repository state.
 
 ### Android SDK Seam
 
-- [ ] **SDK-01**: Android bridge calls go through a `RailPlusSdkAdapter` seam instead of depending directly on `MockRailSdk`.
-- [ ] **SDK-02**: The existing `MockRailSdk` remains available behind the adapter so the current Android demo flow keeps working.
+- [x] **SDK-01**: Android bridge calls go through a `RailPlusSdkAdapter` seam instead of depending directly on `MockRailSdk`.
+- [x] **SDK-02**: The existing `MockRailSdk` remains available behind the adapter so the current Android demo flow keeps working.
 - [x] **SDK-03**: The Android mock SDK can deterministically simulate timeout, internal error, callback loss, duplicate callback, and retry exhaustion scenarios.
 
 ### Bridge Contract
 
-- [ ] **BRG-01**: Android public bridge methods remain `requestCharge`, `getBalance`, `getSdkStatus`, and `reportError`.
-- [ ] **BRG-02**: Bridge responses preserve current fields and add optional metadata fields for `callbackId`, `correlationId`, `platform`, `stage`, `durationMs`, `vendorCode`, and `retryable`.
+- [x] **BRG-01**: Android public bridge methods remain `requestCharge`, `getBalance`, `getSdkStatus`, and `reportError`.
+- [x] **BRG-02**: Bridge responses preserve current fields and add optional metadata fields for `callbackId`, `correlationId`, `platform`, `stage`, `durationMs`, `vendorCode`, and `retryable`.
 
 ### Logging
 
@@ -28,7 +28,7 @@
 
 ### Android Stability
 
-- [ ] **STAB-01**: Android bridge execution handles in-flight request tracking, duplicate callback suppression, timeout handling, and ignores late callbacks after teardown.
+- [x] **STAB-01**: Android bridge execution handles in-flight request tracking, duplicate callback suppression, timeout handling, and ignores late callbacks after teardown.
 
 ### WebView UI
 
@@ -36,8 +36,8 @@
 
 ### iOS Parity
 
-- [ ] **IOS-01**: A runnable iOS demo exists using `WKWebView + Swift bridge + mock adapter`.
-- [ ] **IOS-02**: The iOS bridge methods and log field model match the Android contract closely enough for side-by-side portfolio comparison.
+- [x] **IOS-01**: A runnable iOS demo exists using `WKWebView + Swift bridge + mock adapter`.
+- [x] **IOS-02**: The iOS bridge methods and log field model match the Android contract closely enough for side-by-side portfolio comparison.
 
 ### Documentation
 

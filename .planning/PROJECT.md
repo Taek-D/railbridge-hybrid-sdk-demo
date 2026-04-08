@@ -2,7 +2,7 @@
 
 **Project Name:** RailBridge Demo
 **Repository Root:** `E:\프로젝트\위시켓\Android Java WebView Bridge + SDK 에러 핸들링 데모 — Qwen Code CLI 프롬프트`
-**Last Updated:** 2026-04-06
+**Last Updated:** 2026-04-08
 
 ## What This Is
 
@@ -11,6 +11,7 @@ Android Java + WebView bridge demo for simulating a hybrid transport-card SDK in
 - Android `JavascriptInterface` bridge methods for charge, balance, SDK status, and JS error reporting
 - A mock SDK with retry handling and local error logging
 - A runnable Android Studio project with verified emulator flow
+- A runnable iOS parity demo with macOS/Xcode runtime verification evidence
 - A GSD milestone structure for turning the demo into a portfolio-ready troubleshooting sample
 
 ## Core Value
@@ -21,9 +22,9 @@ Keep the existing Android demo stable while layering in architecture seams, rich
 
 - Android build succeeds with the Gradle wrapper and Android Studio
 - Existing Android demo flow is manually verified on emulator
-- Phase 2 decoupled the bridge from `MockRailSdk` via `RailPlusSdkAdapter`
-- Phase 3 planning is now complete for deterministic scenario simulation, request-timeline diagnostics, and structured JSON export
-- Git is initialized locally, so GSD document commits are now available
+- iOS parity runtime verification is now complete on macOS/Xcode with supporting screenshots
+- Android and iOS now share comparable scenario, diagnostics, and request-ownership vocabulary
+- GitHub remote is configured and milestone work is synced to the repository
 
 ## Current Milestone: v0.2 portfolio expansion
 
@@ -37,13 +38,7 @@ Keep the existing Android demo stable while layering in architecture seams, rich
 
 ## Active Requirements
 
-- `BOOT-01` through `BOOT-02`
-- `SDK-01` through `SDK-03`
-- `BRG-01` through `BRG-02`
-- `LOG-01` through `LOG-02`
-- `STAB-01`
-- `UI-01`
-- `IOS-01` through `IOS-02`
+- `DOC-01`
 - `DOC-01`
 
 ## Key Decisions
@@ -58,7 +53,6 @@ Keep the existing Android demo stable while layering in architecture seams, rich
 ## Constraints
 
 - Existing Android `requestCharge`, `getBalance`, `getSdkStatus`, and `reportError` flows must keep working
-- The repo currently has no iOS project scaffold
 - Windows path contains non-ASCII characters, so Android unit tests must run from an ASCII-path copy in this environment
 - Runtime WebView verification is still manual or `adb`-assisted because the repo has no stable instrumentation harness yet
 

@@ -15,7 +15,7 @@
 - [x] **Phase 2: Android Adapter Seam** - Introduce the adapter seam and preserve the current bridge contract
 - [x] **Phase 3: Logging and Failure Simulation** - Add deterministic scenario control and structured diagnostic output
 - [x] **Phase 4: Android Bridge Hardening** - Make the bridge resilient to async race conditions and teardown timing
-- [ ] **Phase 5: iOS Parity Demo** - Build a runnable iOS sample that mirrors the Android integration model
+- [x] **Phase 5: iOS Parity Demo** - Build a runnable iOS sample that mirrors the Android integration model
 - [ ] **Phase 6: Portfolio Documentation and Validation** - Turn the implementation into a portfolio-ready story with validation evidence
 
 | # | Phase | Goal | Requirements |
@@ -136,9 +136,9 @@ Plans:
 | 2. Android Adapter Seam | 2/2 | Complete | 2026-04-06 |
 | 3. Logging and Failure Simulation | 2/2 | Complete | 2026-04-06 |
 | 4. Android Bridge Hardening | 1/1 | Complete | 2026-04-08 |
-| 5. iOS Parity Demo | 2/2 | Awaiting verification | - |
+| 5. iOS Parity Demo | 2/2 | Complete | 2026-04-08 |
 | 6. Portfolio Documentation and Validation | 0/2 | Not started | - |
 
 ## Next Up
 
-Recommended next command: `$gsd-verify-work 05`
+Recommended next command: `$gsd-discuss-phase 6`
