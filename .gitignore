@@ -2,5 +2,16 @@
 /build/
 /app/build/
 /local.properties
+
 /.codex-*.png
 /.codex-*.xml
+
+.DS_Store
+Thumbs.db
+
+.idea/
+*.iml
+
+DerivedData/
+*.xcuserstate
+**/xcuserdata/

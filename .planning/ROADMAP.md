@@ -16,7 +16,7 @@
 - [x] **Phase 3: Logging and Failure Simulation** - Add deterministic scenario control and structured diagnostic output
 - [x] **Phase 4: Android Bridge Hardening** - Make the bridge resilient to async race conditions and teardown timing
 - [x] **Phase 5: iOS Parity Demo** - Build a runnable iOS sample that mirrors the Android integration model
-- [ ] **Phase 6: Portfolio Documentation and Validation** - Turn the implementation into a portfolio-ready story with validation evidence
+- [x] **Phase 6: Portfolio Documentation and Validation** - Turn the implementation into a portfolio-ready story with validation evidence
 
 | # | Phase | Goal | Requirements |
 |---|---|---|---|
@@ -122,11 +122,11 @@ Plans:
 2. `ARCHITECTURE.md` describes the bridge, adapter, retry, and logging flow.
 3. `DEBUGGING_REPORT.md` shows how scenario evidence supports root-cause analysis.
 4. Validation notes cover both Android and iOS flows and call out remaining limits honestly.
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 06-01: Write architecture and debugging documentation
-- [ ] 06-02: Record validation evidence and portfolio positioning notes
+- [x] 06-01: Write architecture and debugging documentation
+- [x] 06-02: Record validation evidence and portfolio positioning notes
 
 ## Progress
 
@@ -137,8 +137,8 @@ Plans:
 | 3. Logging and Failure Simulation | 2/2 | Complete | 2026-04-06 |
 | 4. Android Bridge Hardening | 1/1 | Complete | 2026-04-08 |
 | 5. iOS Parity Demo | 2/2 | Complete | 2026-04-08 |
-| 6. Portfolio Documentation and Validation | 0/2 | Not started | - |
+| 6. Portfolio Documentation and Validation | 2/2 | Complete | 2026-04-08 |
 
 ## Next Up
 
-Recommended next command: `$gsd-discuss-phase 6`
+Milestone document scope is complete. Next work should be a new milestone or a Kotlin / real-SDK follow-up.

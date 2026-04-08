@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v0.2
 milestone_name: milestone
-status: Ready for planning
-last_updated: "2026-04-08T21:05:00+09:00"
+status: Milestone complete
+last_updated: "2026-04-08T23:25:00+09:00"
 progress:
   total_phases: 6
-  completed_phases: 5
-  total_plans: 9
-  completed_plans: 9
+  completed_phases: 6
+  total_plans: 11
+  completed_plans: 11
 ---
 
 # STATE
@@ -17,21 +17,21 @@ progress:
 
 ## Current Position
 
-Phase: 06 (portfolio-documentation-and-validation) ready to plan
-Plan: 0 of 2 planned
+Phase: 06 (portfolio-documentation-and-validation) complete
+Plan: 2 of 2 planned
 
 - Milestone: `v0.2 portfolio expansion`
 - Phase: `6 - Portfolio Documentation and Validation`
-- Status: `Ready for planning`
-- Last activity: `Closed Phase 5 runtime verification with macOS/Xcode evidence and advanced the milestone to the documentation phase`
+- Status: `Milestone complete`
+- Last activity: `Published architecture, debugging, and validation documents and closed the milestone documentation scope`
 
 ## Immediate Next Step
 
-Plan and execute Phase 6 by:
+Use the current repository as the portfolio baseline and choose one of these next steps:
 
-1. Writing `ARCHITECTURE.md` to explain the Android/iOS bridge, adapter, retry, and diagnostics layers.
-2. Writing `DEBUGGING_REPORT.md` to turn the deterministic scenarios and captured evidence into a troubleshooting narrative.
-3. Updating `README.md` so the repo reads like a portfolio case study instead of only a runnable sample.
+1. Start a new milestone for Android Kotlin parity or real-SDK adapter replacement.
+2. Package the repo for sharing with a client or recruiter.
+3. Add CI or production-style telemetry as future work.
 
 ## Known Blockers
 
@@ -46,6 +46,7 @@ Plan and execute Phase 6 by:
 - Phase 4 now adds `BridgeRequestCoordinator`, explicit `inFlightRequests`, timeout conversion for callback loss, duplicate-callback suppression, and teardown-safe abandonment with emulator verification.
 - Phase 5 now adds `ios/RailBridgeIOS`, a shared Xcode scheme, Swift mirror seams for scenario/logging/request ownership, and a bundled diagnostics page derived from the Android asset.
 - Phase 5 runtime verification is now closed, with simulator evidence committed under `artifacts/ios-portfolio-shots/` and the UAT file marked resolved.
+- Phase 6 adds root-level portfolio artifacts: `README.md`, `ARCHITECTURE.md`, `DEBUGGING_REPORT.md`, and `VALIDATION_REPORT.md`.
 - Temporary QA artifacts from validation remain in the workspace and are ignored by git.
 
 ## Decisions Made
@@ -57,6 +58,7 @@ Plan and execute Phase 6 by:
 - Build Phase 5 as a runnable parity demo under `ios/` instead of broadening into a production-style iOS app.
 - Preserve Android as the source-of-truth for visible diagnostics UX while allowing iOS-specific injected bridge bootstrap code where `WKWebView` transport differs.
 - Use the committed iOS runtime screenshots as documentation inputs for the portfolio phase rather than leaving them as detached validation artifacts.
+- Keep the final portfolio framing honest about current limits: Java on Android, mock SDK backend, and no live telemetry backend.
 
 ## Performance Metrics
 
@@ -68,8 +70,8 @@ Plan and execute Phase 6 by:
 ## Session Info
 
 - Last session: `2026-04-08`
-- Stopped at: `Phase 06 ready to plan`
+- Stopped at: `Milestone complete after Phase 06`
 
 ## Recommended Command
 
-- `$gsd-discuss-phase 6`
+- Start a new milestone only if you want Kotlin parity, real SDK wiring, CI, or telemetry integration.

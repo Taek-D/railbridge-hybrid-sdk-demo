@@ -1,86 +1,212 @@
-# RailBridge Demo
+# RailBridge Hybrid SDK Stabilization Demo
 
-Android Java + WebView bridge sample project for testing a native `JavascriptInterface`, mock SDK failures, retry handling, and local error logging.
+Hybrid WebView transport-card SDK troubleshooting portfolio project. This repository simulates the kind of failure analysis and stabilization work that happens when a legacy app already has a vendor SDK wired in, but the team needs better evidence, safer bridge behavior, and platform parity before touching production code.
 
-## Environment
+The demo now includes:
 
-- Android Gradle Plugin: `8.2.0`
-- Gradle Wrapper: `8.2`
-- Min SDK: `26`
-- Compile / Target SDK: `34`
-- Language: Java
+- Android `WebView + JavascriptInterface + Java` implementation
+- iOS `WKWebView + Swift` parity implementation
+- deterministic vendor-failure presets
+- correlation-based timeline logging
+- exportable diagnostics JSON
+- timeout, duplicate-callback, and teardown hardening
+- runtime verification evidence for both Android and iOS
 
-## Open In Android Studio
+## Why This Exists
 
-1. Open this folder in Android Studio.
+This project was built to demonstrate how to approach a real hybrid-app stabilization engagement where:
+
+- the business flow is already in production
+- the vendor SDK is partially opaque
+- failures are intermittent
+- WebView and native code share responsibility
+- the client needs evidence, not guesses
+
+The codebase does not claim to be a real RailPlus integration. Instead, it uses a mock adapter layer to simulate the failure shapes that usually make closed-SDK troubleshooting hard:
+
+- `timeout`
+- `internal_error`
+- `callback_loss`
+- `duplicate_callback`
+- `retry_exhausted`
+
+## Repo Map
+
+```text
+app/
+  src/main/java/com/demo/railbridge/
+    bridge/
+    logging/
+    retry/
+    sdk/
+  src/main/assets/webview/index.html
+
+ios/RailBridgeIOS/
+  RailBridgeIOS/
+    Bridge/
+    SDK/
+    Logging/
+    Resources/webview/index.html
+  RailBridgeIOSTests/
+
+artifacts/ios-portfolio-shots/
+.planning/
+```
+
+## Architecture At A Glance
+
+The Android and iOS demos intentionally keep the same operator-facing shape:
+
+1. WebView page triggers one of four business actions.
+2. Native bridge generates a `correlationId` and records staged timeline events.
+3. Bridge calls the adapter seam instead of talking directly to the mock SDK.
+4. Adapter applies the active failure preset.
+5. Bridge owns timeout, duplicate suppression, and teardown-safe delivery.
+6. Result and diagnostics payloads return to the page with additive metadata.
+
+See [ARCHITECTURE.md](/E:/프로젝트/위시켓/Android%20Java%20WebView%20Bridge%20+%20SDK%20에러%20핸들링%20데모%20—%20Qwen%20Code%20CLI%20프롬프트/ARCHITECTURE.md) for the full flow.
+
+## What The Demo Proves
+
+- How to keep a legacy WebView contract stable while refactoring native internals
+- How to reproduce intermittent SDK failures on demand
+- How to log enough evidence to argue whether the fault is in JS, the bridge, retry policy, or the SDK callback layer
+- How to align Android and iOS around the same troubleshooting vocabulary
+- How to harden bridge behavior without changing the visible business actions
+
+## Bridge Contract
+
+The preserved public bridge actions are:
+
+- `requestCharge`
+- `getBalance`
+- `getSdkStatus`
+- `reportError`
+
+Base response fields remain stable:
+
+- `status`
+- `method`
+- `data`
+- `error`
+- `retryCount`
+
+Additive metadata fields:
+
+- `callbackId`
+- `correlationId`
+- `platform`
+- `stage`
+- `durationMs`
+- `scenario`
+- `vendorCode`
+- `retryable`
+- `resolvedByRetry`
+
+## Deterministic Presets
+
+The current preset list is:
+
+- `normal`
+- `timeout`
+- `internal_error`
+- `callback_loss`
+- `duplicate_callback`
+- `retry_exhausted`
+
+These are exposed in the shared diagnostics page so a reviewer can switch scenarios without changing source code.
+
+## Android Run
+
+Environment:
+
+- Android Gradle Plugin `8.2.0`
+- Gradle Wrapper `8.2`
+- minSdk `26`
+- compileSdk / targetSdk `34`
+
+Recommended Android Studio flow:
+
+1. Open the repository root in Android Studio.
 2. Use the Gradle wrapper when prompted.
-3. Set the Gradle JDK to a JDK `17+`.
+3. Set the Gradle JDK to `17+`.
 4. Sync the project.
-5. Run the `app` configuration on an emulator or device.
+5. Run the `app` configuration.
+6. Tap `Start demo`.
+7. Exercise the four bridge actions and the diagnostics presets.
 
-Notes:
-
-- `local.properties` is intentionally ignored by git. Android Studio can create it automatically if needed.
-- This repo already enables `android.overridePathCheck=true` because the current Windows path contains non-ASCII characters.
-- On this machine, Android Studio's bundled JBR 21 works for Gradle, but JDK 17 remains the safest baseline to use across teammates.
-
-## Required Android SDK Packages
-
-Install these from SDK Manager before building:
+Required Android SDK packages:
 
 - Android SDK Platform `34`
 - Android SDK Build-Tools `34.0.0` or newer
 - Android SDK Platform-Tools
 
-## Project Structure
-
-```text
-app/
-  src/main/
-    java/com/demo/railbridge/
-      MainActivity.java
-      WebViewActivity.java
-      bridge/
-      logging/
-      retry/
-      sdk/
-    assets/webview/index.html
-    res/
-```
-
-## Manual Test Flow
-
-1. Launch the app.
-2. Tap `Start demo`.
-3. In the WebView screen:
-   - Tap `Request charge`
-   - Tap `Get balance`
-   - Tap `SDK status`
-   - Tap `Report JS error`
-4. Confirm that the result log updates for each action.
-
-## Troubleshooting
-
-If Android Studio build or sync fails, check these in order:
-
-1. Gradle wrapper files exist: `gradlew`, `gradlew.bat`, `gradle/wrapper/*`
-2. Gradle JDK is set to `17+`
-3. `local.properties` points to a valid Android SDK
-4. Android SDK Platform `34` is installed
-5. Sync error category:
-   - Missing SDK / `sdk.dir`
-   - Dependency resolution
-   - Manifest merge
-   - Resource not found
-   - WebView asset loading at runtime
-
-## CLI Verification
-
-From PowerShell:
+CLI build example on Windows:
 
 ```powershell
 $env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"
 .\gradlew.bat assembleDebug
 ```
 
-If your Android SDK path is different, update `local.properties` or let Android Studio regenerate it.
+Note:
+
+- this workspace path contains non-ASCII characters
+- Android unit tests were verified from an ASCII-path copy because AGP worker classpaths can fail under the original path
+
+## iOS Run
+
+Open the Xcode project:
+
+```bash
+open ios/RailBridgeIOS/RailBridgeIOS.xcodeproj
+```
+
+Recommended Xcode flow:
+
+1. Select the `RailBridgeIOS` scheme.
+2. Run on an iPhone simulator.
+3. Tap `Start demo`.
+4. Verify the shared diagnostics page loads.
+5. Exercise the same four actions and scenario presets used on Android.
+
+The iOS implementation intentionally mirrors the Android concepts rather than trying to look like a production app shell.
+
+## Validation Evidence
+
+Android evidence:
+
+- Android Studio sync and `assembleDebug` succeeded
+- emulator smoke confirmed preserved four-action flow
+- `duplicate_callback` showed one visible result plus ignored-duplicate diagnostics
+- `callback_loss` converted into timeout evidence
+
+iOS evidence:
+
+- Xcode runtime verification completed on macOS
+- screenshots captured under [artifacts/ios-portfolio-shots](/E:/프로젝트/위시켓/Android%20Java%20WebView%20Bridge%20+%20SDK%20에러%20핸들링%20데모%20—%20Qwen%20Code%20CLI%20프롬프트/artifacts/ios-portfolio-shots)
+
+Supporting documents:
+
+- [ARCHITECTURE.md](/E:/프로젝트/위시켓/Android%20Java%20WebView%20Bridge%20+%20SDK%20에러%20핸들링%20데모%20—%20Qwen%20Code%20CLI%20프롬프트/ARCHITECTURE.md)
+- [DEBUGGING_REPORT.md](/E:/프로젝트/위시켓/Android%20Java%20WebView%20Bridge%20+%20SDK%20에러%20핸들링%20데모%20—%20Qwen%20Code%20CLI%20프롬프트/DEBUGGING_REPORT.md)
+- [VALIDATION_REPORT.md](/E:/프로젝트/위시켓/Android%20Java%20WebView%20Bridge%20+%20SDK%20에러%20핸들링%20데모%20—%20Qwen%20Code%20CLI%20프롬프트/VALIDATION_REPORT.md)
+
+## Current Limits
+
+This repo is a troubleshooting demo, not a production payment app.
+
+Important limits:
+
+- Android production stack in the target job spec is Kotlin, while this Android demo remains Java
+- the SDK layer is simulated, not a real RailPlus binary
+- no real payment processing, NFC, or card-state mutation occurs
+- Crashlytics is treated as an integration point, not a live configured backend
+- Android instrumentation coverage is still manual or `adb`-assisted
+
+## Best Portfolio Framing
+
+The strongest honest description is:
+
+`A cross-platform hybrid WebView SDK stabilization demo that reproduces opaque vendor failure modes, preserves legacy bridge contracts, adds correlation-based diagnostics, and hardens async bridge ownership on Android and iOS.`
+
+That framing is more defensible than claiming direct production RailPlus operations experience.

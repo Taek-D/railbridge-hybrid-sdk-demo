@@ -1,7 +1,7 @@
 # REQUIREMENTS
 
 **Milestone:** `v0.2 portfolio expansion`
-**Last Updated:** 2026-04-06
+**Last Updated:** 2026-04-08
 
 ## In Scope
 
@@ -41,7 +41,7 @@
 
 ### Documentation
 
-- [ ] **DOC-01**: `README.md`, `ARCHITECTURE.md`, and `DEBUGGING_REPORT.md` explain the system shape, failure-analysis strategy, and validation story as portfolio artifacts.
+- [x] **DOC-01**: `README.md`, `ARCHITECTURE.md`, and `DEBUGGING_REPORT.md` explain the system shape, failure-analysis strategy, and validation story as portfolio artifacts.
 
 ## Future Requirements
 
