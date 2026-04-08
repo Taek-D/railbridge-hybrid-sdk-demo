@@ -65,7 +65,7 @@ The Android and iOS demos intentionally keep the same operator-facing shape:
 5. Bridge owns timeout, duplicate suppression, and teardown-safe delivery.
 6. Result and diagnostics payloads return to the page with additive metadata.
 
-Android now exposes the same shared diagnostics page through two launch paths:
+Android now uses a thin Kotlin launcher shell that exposes the same shared diagnostics page through two launch paths:
 
 - Java baseline demo
 - Kotlin parity demo

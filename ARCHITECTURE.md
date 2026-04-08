@@ -61,6 +61,8 @@ Android flow:
 
 The Kotlin parity path deliberately reuses the existing Java domain, scenario, and logging types. Only the bridge-core path is rewritten in Kotlin so the project can demonstrate Kotlin credibility without destabilizing the verified Java baseline.
 
+The Android launcher shell is also Kotlin now, but it stays intentionally thin. Its only job is to present the two demo entrypoints and route into the Java baseline or Kotlin parity WebView path.
+
 ## iOS Stack
 
 Key files:

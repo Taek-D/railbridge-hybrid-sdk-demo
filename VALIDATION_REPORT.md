@@ -16,6 +16,8 @@ Android now has two demonstrable runtime paths:
 - Java baseline flow
 - Kotlin parity flow using the same shared WebView page and diagnostics contract
 
+The launcher shell for those two paths is Kotlin, while the Java baseline business-flow implementation remains in place.
+
 ## Verification Matrix
 
 | Area | Android | iOS | Evidence |
