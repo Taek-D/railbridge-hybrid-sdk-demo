@@ -22,7 +22,8 @@ flowchart LR
 
 Two platform shells implement the same shape:
 
-- Android: `WebViewActivity -> NativeBridge -> RailPlusSdkAdapter`
+- Android Java baseline: `WebViewActivity -> NativeBridge -> RailPlusSdkAdapter`
+- Android Kotlin parity: `KotlinWebViewActivity -> KotlinNativeBridge -> RailPlusSdkAdapter`
 - iOS: `WebViewDemoView -> IOSNativeBridge -> RailPlusSdkAdapter`
 
 ## Shared Design Rules
@@ -47,15 +48,18 @@ Key files:
 
 Android flow:
 
-1. `WebViewActivity` loads `file:///android_asset/webview/index.html`
-2. `RailBridge` is injected through `addJavascriptInterface`
-3. `NativeBridge` parses params and creates a request context
-4. `BridgeRequestCoordinator` registers ownership and timeout deadline
-5. `RetryHandler` retries retryable adapter failures
-6. `MockRailSdkAdapter` applies the active preset
-7. `ErrorLogger` records stage events into request timelines
-8. `BridgeResponseFactory` appends additive metadata
-9. `window.onBridgeResult(...)` receives the final payload
+1. `MainActivity` offers Java baseline and Kotlin parity launch paths
+2. Both activities load `file:///android_asset/webview/index.html`
+3. `RailBridge` is injected through `addJavascriptInterface`
+4. The selected bridge implementation parses params and creates a request context
+5. The selected request coordinator registers ownership and timeout deadline
+6. Retryable adapter failures are retried with the same timing semantics
+7. The selected adapter applies the active preset
+8. `ErrorLogger` records stage events into request timelines
+9. The selected response factory appends additive metadata
+10. `window.onBridgeResult(...)` receives the final payload
+
+The Kotlin parity path deliberately reuses the existing Java domain, scenario, and logging types. Only the bridge-core path is rewritten in Kotlin so the project can demonstrate Kotlin credibility without destabilizing the verified Java baseline.
 
 ## iOS Stack
 

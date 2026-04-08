@@ -5,6 +5,7 @@
 
 /.codex-*.png
 /.codex-*.xml
+/.omc/
 
 .DS_Store
 Thumbs.db

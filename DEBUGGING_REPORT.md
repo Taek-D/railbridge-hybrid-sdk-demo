@@ -182,6 +182,7 @@ Validated paths:
 
 - Gradle wrapper build
 - Android Studio sync and run
+- Java baseline and Kotlin parity launch paths
 - emulator smoke
 - deterministic scenario behavior
 - duplicate suppression
@@ -231,7 +232,7 @@ This repository does not prove:
 - real NFC hardware flow handling
 - real money movement
 - live Crashlytics or analytics operations
-- Android Kotlin production migration
+- full Android Kotlin production migration
 
 Those should be described as follow-up work, not implied as already solved.
 

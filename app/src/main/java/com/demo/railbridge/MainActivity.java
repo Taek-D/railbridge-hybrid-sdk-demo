@@ -6,6 +6,8 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.demo.railbridge.kotlin.KotlinWebViewActivity;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -13,9 +15,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button startDemoButton = findViewById(R.id.btnStartDemo);
-        startDemoButton.setOnClickListener(v -> {
+        Button startJavaDemoButton = findViewById(R.id.btnStartJavaDemo);
+        startJavaDemoButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
+            startActivity(intent);
+        });
+
+        Button startKotlinDemoButton = findViewById(R.id.btnStartKotlinDemo);
+        startKotlinDemoButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, KotlinWebViewActivity.class);
             startActivity(intent);
         });
     }

@@ -32,12 +32,23 @@
         android:textSize="14sp" />
 
     <Button
-        android:id="@+id/btnStartDemo"
+        android:id="@+id/btnStartJavaDemo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/primary"
         android:padding="16dp"
-        android:text="@string/start_demo"
+        android:text="@string/start_java_demo"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btnStartKotlinDemo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="@color/primary"
+        android:padding="16dp"
+        android:text="@string/start_kotlin_demo"
         android:textSize="18sp"
         android:textStyle="bold" />
 

@@ -11,6 +11,11 @@ This repository now has validation evidence for both platforms:
 
 The validation story is intentionally honest: Android has stronger local automation in this workspace, while iOS runtime proof was completed on macOS/Xcode and synced back into the repository.
 
+Android now has two demonstrable runtime paths:
+
+- Java baseline flow
+- Kotlin parity flow using the same shared WebView page and diagnostics contract
+
 ## Verification Matrix
 
 | Area | Android | iOS | Evidence |
@@ -33,6 +38,7 @@ Primary references:
 
 Validated behaviors:
 
+- Java and Kotlin Android launch paths both open the same diagnostics page
 - scenario presets produce reproducible failures
 - timeline export preserves `schemaVersion`, stage data, and completion metadata
 - duplicate callbacks are suppressed
@@ -58,7 +64,7 @@ Validated behaviors:
 
 ## Remaining Limits
 
-- Android production target in the intended client project is Kotlin, while this demo remains Java on Android
+- Android now includes a Kotlin parity path, but the production-strength baseline and most shared infrastructure still remain in Java
 - no real vendor SDK binary is integrated
 - no production metrics backend is configured
 - no CI pipeline currently runs cross-platform runtime validation

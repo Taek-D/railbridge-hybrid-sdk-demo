@@ -3,7 +3,8 @@
     <string name="app_name">RailBridge Demo</string>
     <string name="logo_content_description">RailBridge app logo</string>
     <string name="home_title">RailBridge Demo</string>
-    <string name="home_subtitle">WebView bridge and SDK error handling sample</string>
-    <string name="start_demo">Start demo</string>
-    <string name="home_hint">Tap the button to open the WebView test screen.</string>
+    <string name="home_subtitle">Java baseline plus Kotlin parity for hybrid bridge troubleshooting</string>
+    <string name="start_java_demo">Start Java demo</string>
+    <string name="start_kotlin_demo">Start Kotlin parity demo</string>
+    <string name="home_hint">Launch either flow to compare Java and Kotlin bridge behavior on the same shared diagnostics page.</string>
 </resources>
