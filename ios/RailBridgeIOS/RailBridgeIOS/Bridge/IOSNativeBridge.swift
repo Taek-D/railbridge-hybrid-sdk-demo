@@ -12,10 +12,12 @@ final class IOSNativeBridge: NSObject, WKScriptMessageHandler, WKNavigationDeleg
     private let scenarioController: ScenarioController
     private let requestCoordinator = BridgeRequestCoordinator(timeoutMs: IOSNativeBridge.timeoutMs)
     private let callbackQueue = DispatchQueue.main
+    private let automation = AutomationConfig.current
 
     private weak var webView: WKWebView?
     private var timeoutWorkItems: [String: DispatchWorkItem] = [:]
     private var destroyed = false
+    private var didRunAutomation = false
 
     init(
         adapter: RailPlusSdkAdapter,
@@ -81,6 +83,7 @@ final class IOSNativeBridge: NSObject, WKScriptMessageHandler, WKNavigationDeleg
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         refreshDiagnosticsCache()
+        runAutomationIfNeeded(on: webView)
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -504,6 +507,27 @@ final class IOSNativeBridge: NSObject, WKScriptMessageHandler, WKNavigationDeleg
         webView.evaluateJavaScript(script, completionHandler: nil)
     }
 
+    private func runAutomationIfNeeded(on webView: WKWebView) {
+        guard !didRunAutomation else {
+            return
+        }
+
+        guard automation.preset != nil || automation.action != nil else {
+            return
+        }
+
+        didRunAutomation = true
+        let script = automation.script(jsQuoted: jsQuoted)
+
+        callbackQueue.asyncAfter(deadline: .now() + 0.2) { [weak self, weak webView] in
+            guard let self, let webView, !self.destroyed else {
+                return
+            }
+
+            webView.evaluateJavaScript(script, completionHandler: nil)
+        }
+    }
+
     private func buildMetadata(
         context: RequestContext,
         stage: String,
@@ -644,5 +668,77 @@ final class IOSNativeBridge: NSObject, WKScriptMessageHandler, WKNavigationDeleg
         var elapsedMs: Int {
             max(0, Int(Timestamp.nowMs() - startedAtMs))
         }
+    }
+}
+
+private struct AutomationConfig {
+    let preset: String?
+    let action: String?
+    let cardId: String
+    let amount: Int
+
+    static var current: AutomationConfig {
+        let environment = ProcessInfo.processInfo.environment
+        return AutomationConfig(
+            preset: environment["RAILBRIDGE_AUTOMATION_PRESET"]?.nilIfEmpty,
+            action: environment["RAILBRIDGE_AUTOMATION_ACTION"]?.nilIfEmpty,
+            cardId: environment["RAILBRIDGE_AUTOMATION_CARD_ID"]?.nilIfEmpty ?? "CARD_001",
+            amount: Int(environment["RAILBRIDGE_AUTOMATION_AMOUNT"] ?? "") ?? 10000
+        )
+    }
+
+    func script(jsQuoted: (String) -> String) -> String {
+        var statements: [String] = []
+
+        if let preset {
+            statements.append("window.RailBridge.setScenarioPreset(\(jsQuoted(preset)));")
+        }
+
+        if let action {
+            let actionStatement: String?
+            switch action {
+            case "requestCharge":
+                actionStatement = "window.RailBridge.requestCharge(JSON.stringify({ cardId: \(jsQuoted(cardId)), amount: \(amount) }));"
+            case "getBalance":
+                actionStatement = "window.RailBridge.getBalance(JSON.stringify({ cardId: \(jsQuoted(cardId)) }));"
+            case "getSdkStatus":
+                actionStatement = "window.RailBridge.getSdkStatus();"
+            case "reportError":
+                actionStatement = """
+                window.RailBridge.reportError(JSON.stringify({
+                  code: "ERR_AUTOMATION_001",
+                  message: "Synthetic JS error from automation",
+                  context: "Codex runtime verification"
+                }));
+                """
+            default:
+                actionStatement = nil
+            }
+
+            if let actionStatement {
+                if preset != nil {
+                    statements.append("window.setTimeout(function() { \(actionStatement) }, 80);")
+                } else {
+                    statements.append(actionStatement)
+                }
+            }
+        }
+
+        let body = statements.joined(separator: "\n")
+        return """
+        (function() {
+          if (!window.RailBridge) {
+            return;
+          }
+          \(body)
+        })();
+        """
+    }
+}
+
+private extension String {
+    var nilIfEmpty: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
